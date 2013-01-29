@@ -1,28 +1,12 @@
 /*!
- * validation.js
+ * validation.js (https://github.com/chemerisuk/validation.js)
+ *
+ * HTML5 form validation api polyfill
  *
  * Copyright (c) 2013 Maksim Chemerisuk
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
  */
-document.addEventListener && (function(document, window, body, html) {
+window.addEventListener && (function(document, window, bodyEl, htmlEl) {
     var validateElement = function(input) {
             if ("checkValidity" in input && !input.checkValidity()) {
                 var evt = document.createEvent("Event");
@@ -37,12 +21,10 @@ document.addEventListener && (function(document, window, body, html) {
             return true;
         },
         tooltipApi = (function() {
-            var validityTooltip = document.createElement("div"),
+            var validityEl = bodyEl.appendChild(document.createElement("div")),
                 invalidInput = null;
             
-            validityTooltip.id = "validity";
-            
-            body.appendChild(validityTooltip);
+            validityEl.id = "validity";
             
             return {
                 show: function(input, force) {
@@ -53,10 +35,10 @@ document.addEventListener && (function(document, window, body, html) {
                             errorMessage,
                             // position vars
                             boundingRect = input.getBoundingClientRect(),
-                            clientTop = html.clientTop || body.clientTop || 0,
-                            clientLeft = html.clientLeft || body.clientLeft || 0,
-                            scrollTop = (window.pageYOffset || html.scrollTop || body.scrollTop),
-                            scrollLeft = (window.pageXOffset || html.scrollLeft || body.scrollLeft);
+                            clientTop = htmlEl.clientTop || bodyEl.clientTop || 0,
+                            clientLeft = htmlEl.clientLeft || bodyEl.clientLeft || 0,
+                            scrollTop = (window.pageYOffset || htmlEl.scrollTop || bodyEl.scrollTop),
+                            scrollLeft = (window.pageXOffset || htmlEl.scrollLeft || bodyEl.scrollLeft);
                         
                         for (var errorType in validity) {
                             if (validity[errorType]) {
@@ -73,17 +55,17 @@ document.addEventListener && (function(document, window, body, html) {
                             errorMessage = input.validationMessage;
                         }
                         
-                        validityTooltip.textContent = errorMessage || "";
-                        validityTooltip.className = errorArray.join(" ");
-                        validityTooltip.style.top = boundingRect.bottom + scrollTop - clientTop + "px";
-                        validityTooltip.style.left = boundingRect.left + scrollLeft - clientLeft + "px";
+                        validityEl.textContent = errorMessage || "";
+                        validityEl.className = errorArray.join(" ");
+                        validityEl.style.top = boundingRect.bottom + scrollTop - clientTop + "px";
+                        validityEl.style.left = boundingRect.left + scrollLeft - clientLeft + "px";
                         
                         invalidInput = input;
                     }
                 },
                 hide: function(input, force) {
                     if (force || !invalidInput || invalidInput === input) {
-                        validityTooltip.removeAttribute("class");
+                        validityEl.removeAttribute("class");
                         
                         invalidInput = null;
                     }
@@ -257,4 +239,4 @@ document.addEventListener && (function(document, window, body, html) {
         }
     }, true);
     
-})(document, window, document.body, document.documentElement);
+})(document, window, document.bodyEl, document.documentElement);
