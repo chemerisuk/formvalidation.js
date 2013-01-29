@@ -7,7 +7,28 @@
  *
  */
 window.addEventListener && (function(document, window, bodyEl, htmlEl) {
-    var tooltipApi = (function() {
+    var bindEvent = function(eventType, capturing, handler) {
+            document.addEventListener(eventType, handler, capturing);
+        },
+        fireEvent = function(eventType, thisPtr) {
+            var evt = document.createEvent("Event");
+        
+            evt.initEvent(eventType, false, false);
+
+            thisPtr.dispatchEvent(evt);
+        },
+        none = function(form, test) {
+            var inputs = Array.prototype.slice.call(form.elements, 0);
+
+            for (var i = 0, n = inputs.length; i < n; ++i) {
+                if (!test(inputs[i])) {
+                    return false;
+                }
+            }
+
+            return true;
+        },
+        tooltipApi = (function() {
             var validityEl = bodyEl.appendChild(document.createElement("div")),
                 invalidInput = null,
                 buildErrorClass = (function() {
@@ -116,9 +137,11 @@ window.addEventListener && (function(document, window, bodyEl, htmlEl) {
                 
                 case "radio":
                     if (!this.checked && this.getAttribute("required")) {
-                        validity.valueMissing = Array.prototype.some.call(this.form.elements, function(el) {
-                            return this.name === el.name && el.checked;
-                        }, this);
+                        var name = this.name;
+
+                        validity.valueMissing = none(this.form, function(input) {
+                            return input.checked && input.name === name;
+                        });
                         validity.valid = !validity.valueMissing;
                     }
                     break;
@@ -151,7 +174,7 @@ window.addEventListener && (function(document, window, bodyEl, htmlEl) {
                                 
                                 validity.patternMismatch = !pattern.test(this.value);
                                 validity.valid = !validity.patternMismatch;
-                            }    
+                            }
                         }
                     } else {
                         validity.valueMissing = !!this.getAttribute("required");
@@ -162,51 +185,35 @@ window.addEventListener && (function(document, window, bodyEl, htmlEl) {
             
             if (this.validity) {
                 validity.customError = this.validity.customError;
+                validity.validationMessage = this.validity.validationMessage;
                 validity.valid &= !validity.customError;
             }
             
             this.validity = validity;
 
-            if (!validity.valid) {
-                // trigger invalid event
-                var evt = document.createEvent("Event");
-        
-                evt.initEvent("invalid", false, false);
-
-                this.dispatchEvent(evt);
-            }
-            
-            // TODO: set validationMessage
-            
-            return validity.valid;
+            return validity.valid || !!fireEvent("invalid", this);
         };
         
         HTMLFormElement.prototype.checkValidity = function() {
-            var inputs = Array.prototype.slice.call(this.elements, 0);
-
-            for (var i = 0, n = inputs.length; i < n; ++i) {
-                if (!inputs[i].checkValidity()) {
-                    return false;
-                }
-            }
-
-            return true;
+            return none(this, function(input) {
+                return !input.checkValidity();
+            });
         };
     }
     
-    document.addEventListener("invalid", function(e) {
+    bindEvent("invalid", true, function(e) {
         tooltipApi.show(e.target, false);
         // don't show native tooltip
         e.preventDefault();
-    }, true);
+    });
     
-    document.addEventListener("change", function(e) {
+    bindEvent("change", false, function(e) {
         if (e.target.checkValidity()) {
             tooltipApi.hide(e.target, false);
         }
-    }, false);
+    });
     
-    document.addEventListener("input", function(e) {
+    bindEvent("input", false, function(e) {
         var target = e.target;
         // polyfill textarea maxlength attribute
         if (target.type == "textarea") {
@@ -219,28 +226,28 @@ window.addEventListener && (function(document, window, bodyEl, htmlEl) {
         
         // hide tooltip on user input
         tooltipApi.hide(target, true);
-    }, false);
+    });
     
     // validate all elements on a form submit
-    document.addEventListener("submit", function(e) {
+    bindEvent("submit", true, function(e) {
         if (e.target.checkValidity()) {
             tooltipApi.hide(null, true);
         } else {
             // prevent form submition because of errors
             e.preventDefault();
         }
-    }, true);
+    });
     
     // hide tooltip when user resets the form
-    document.addEventListener("reset", function(e) {
+    bindEvent("reset", false, function(e) {
         tooltipApi.hide(null, true);
-    }, false);
+    });
     
     // hide tooltip when user goes to other part of page
-    document.addEventListener("click", function(e) {
+    bindEvent("click", true, function(e) {
         if (e.target.form !== tooltipApi.getForm()) {
             tooltipApi.hide(null, true);
         }
-    }, true);
+    });
     
 })(document, window, document.body, document.documentElement);
