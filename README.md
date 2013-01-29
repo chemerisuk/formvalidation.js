@@ -4,6 +4,7 @@ HTML5 form validation api polyfill.
 
 Features
 --------
+* no additional dependencies
 * doesn't require initialization call on each form
 * tooltip is fully customizable via CSS
 * error messages are fully customizable
@@ -35,9 +36,15 @@ Customization
 -------------
 _TODO_
 
+Internationalization
+--------------------
+_TODO_
+
 Browser support
 ---------------
 * Chrome
 * Firefox
 * Opera
 * IE9+
+
+It's possible to add IE8 support, but not IE6-7 (these dinosaurs do not support DOM object prototypes)
