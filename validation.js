@@ -7,20 +7,7 @@
  *
  */
 window.addEventListener && (function(document, window, bodyEl, htmlEl) {
-    var validateElement = function(input) {
-            if ("checkValidity" in input && !input.checkValidity()) {
-                var evt = document.createEvent("Event");
-        
-                evt.initEvent("invalid", false, false);
-
-                input.dispatchEvent(evt);
-                
-                return false;
-            }
-            
-            return true;
-        },
-        tooltipApi = (function() {
+    var tooltipApi = (function() {
             var validityEl = bodyEl.appendChild(document.createElement("div")),
                 invalidInput = null,
                 buildErrorClass = (function() {
@@ -95,9 +82,9 @@ window.addEventListener && (function(document, window, bodyEl, htmlEl) {
         })();
     
     if (!("validity" in document.createElement("input"))) {
-        var numberRe = /^-?[0-9]*(\.[0-9]+)?$/,
-            emailRe = /^([a-z0-9_\.\-\+]+)@([\da-z\.\-]+)\.([a-z\.]{2,6})$/i,
-            urlRe = /^(https?:\/\/)?[\da-z\.\-]+\.[a-z\.]{2,6}[#&+_\?\/\w \.\-=]*$/i;
+        var rNumber = /^-?[0-9]*(\.[0-9]+)?$/,
+            rEmail = /^([a-z0-9_\.\-\+]+)@([\da-z\.\-]+)\.([a-z\.]{2,6})$/i,
+            rUrl = /^(https?:\/\/)?[\da-z\.\-]+\.[a-z\.]{2,6}[#&+_\?\/\w \.\-=]*$/i;
         
         window.ValidityState = function() {
             this.customError = false;
@@ -147,11 +134,11 @@ window.addEventListener && (function(document, window, bodyEl, htmlEl) {
                             validity.valid = !validity.typeMismatch;
                             break;
                         case "email":
-                            validity.typeMismatch = !emailRe.test(this.value);
+                            validity.typeMismatch = !rEmail.test(this.value);
                             validity.valid = !validity.typeMismatch;
                             break;
                         case "url":
-                            validity.typeMismatch = !urlRe.test(this.value);
+                            validity.typeMismatch = !rUrl.test(this.value);
                             validity.valid = !validity.typeMismatch;
                             break;
                         }
@@ -179,6 +166,15 @@ window.addEventListener && (function(document, window, bodyEl, htmlEl) {
             }
             
             this.validity = validity;
+
+            if (!validity.valid) {
+                // trigger invalid event
+                var evt = document.createEvent("Event");
+        
+                evt.initEvent("invalid", false, false);
+
+                this.dispatchEvent(evt);
+            }
             
             // TODO: set validationMessage
             
@@ -186,9 +182,15 @@ window.addEventListener && (function(document, window, bodyEl, htmlEl) {
         };
         
         HTMLFormElement.prototype.checkValidity = function() {
-            return Array.prototype.every.call(this.elements, function(el) {
-                return validateElement(el) || !!tooltipApi.show(el);
-            });
+            var inputs = Array.prototype.slice.call(this.elements, 0);
+
+            for (var i = 0, n = inputs.length; i < n; ++i) {
+                if (!inputs[i].checkValidity()) {
+                    return false;
+                }
+            }
+
+            return true;
         };
     }
     
@@ -199,9 +201,7 @@ window.addEventListener && (function(document, window, bodyEl, htmlEl) {
     }, true);
     
     document.addEventListener("change", function(e) {
-        if (!validateElement(e.target)) {
-            tooltipApi.show(e.target, true);
-        } else {
+        if (e.target.checkValidity()) {
             tooltipApi.hide(e.target, false);
         }
     }, false);
@@ -223,11 +223,11 @@ window.addEventListener && (function(document, window, bodyEl, htmlEl) {
     
     // validate all elements on a form submit
     document.addEventListener("submit", function(e) {
-        if (!e.target.checkValidity()) {
-            // prevent form submitting
-            e.preventDefault();
-        } else {
+        if (e.target.checkValidity()) {
             tooltipApi.hide(null, true);
+        } else {
+            // prevent form submition because of errors
+            e.preventDefault();
         }
     }, true);
     
