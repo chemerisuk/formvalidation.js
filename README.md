@@ -1,4 +1,4 @@
-validation.js
+fromvalidation.js
 =============
 HTML5 form validation api polyfill.
 
@@ -17,12 +17,12 @@ All you need is to include several additional files to your page:
 <html>
   <head>
     ...
-    <link href="validation.css" rel="stylesheet"/>
+    <link href="formvalidation.css" rel="stylesheet"/>
     ...
   </head>
   <body>
     ...
-    <script src="validation.js"></script>
+    <script src="formvalidation.js"></script>
   </body>
 </html>
 ```

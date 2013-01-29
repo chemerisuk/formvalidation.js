@@ -1,5 +1,5 @@
 /*!
- * validation.js (https://github.com/chemerisuk/validation.js)
+ * formvalidation.js (https://github.com/chemerisuk/formvalidation.js)
  *
  * HTML5 form validation api polyfill
  *
