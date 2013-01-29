@@ -1,9 +1,9 @@
 {
-	"name": "formvalidation",
-	"version": "1.0.0",
-	"main": "formvalidation.js",
-	"author": {
-    	"name": "Maksim Chemerisuk"
+    "name": "formvalidation",
+    "version": "1.0.0",
+    "main": "formvalidation.js",
+    "author": {
+        "name": "Maksim Chemerisuk"
     },
     "repository": {
         "type": "git",
