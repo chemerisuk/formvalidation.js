@@ -1,3 +1,11 @@
+/*!
+ * validation.js (https://github.com/chemerisuk/validation.js)
+ *
+ * HTML5 form validation api polyfill
+ *
+ * Copyright (c) 2013 Maksim Chemerisuk
+ *
+ */
 #validity {
     display: none;
     color: #FFF;
@@ -40,18 +48,22 @@
     display: inline-block;
 }
 
-#validity.valueMissing:after {
-    content: 'Please fill this field';
+#validity.value-missing:after {
+    content: "Please fill this field"
 }
 
-#validity.typeMismatch:after {
-    content: 'Value has illegal format';
+#validity.type-mismatch:after {
+    content: "Value has illegal format"
 }
 
-#validity.valueMissing:lang(ru):after {
-    content: "Это поле не может быть пустым";
+#validity.email-mismatch:after {
+    content: "Value should be a valid email"
 }
 
-#validity.typeMismatch:lang(ru):after {
-    content: "Введенное значение имеет недопустимый формат";
+#validity.value-missing:lang(ru):after {
+    content: "Это поле не может быть пустым"
+}
+
+#validity.type-mismatch:lang(ru):after {
+    content: "Введенное значение имеет недопустимый формат"
 }

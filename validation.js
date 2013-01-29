@@ -22,7 +22,25 @@ window.addEventListener && (function(document, window, bodyEl, htmlEl) {
         },
         tooltipApi = (function() {
             var validityEl = bodyEl.appendChild(document.createElement("div")),
-                invalidInput = null;
+                invalidInput = null,
+                buildErrorClass = (function() {
+                    var rUpperCase = /[A-Z]/g,
+                        camelCaseToDashSeparated = function(l) {
+                            return "-" + l.toLowerCase();
+                        };
+
+                    return function(errorType, input) {
+                        var inputType = input.getAttribute("type");
+
+                        if (errorType === "typeMismatch" && inputType) {
+                            // special case for email-mismatch, url-mismatch etc.
+                            return inputType.toLowerCase() + "-mismatch";
+                        } else {
+                            // convert camel case to dash separated
+                            return errorType.replace(rUpperCase, camelCaseToDashSeparated);
+                        }
+                    };
+                })();
             
             validityEl.id = "validity";
             
@@ -31,7 +49,7 @@ window.addEventListener && (function(document, window, bodyEl, htmlEl) {
                     if ((force || !invalidInput || invalidInput === input) && !input.validity.valid) {
                         var // validity vars
                             validity = input.validity,
-                            errorArray = [],
+                            classesArray = [],
                             errorMessage,
                             // position vars
                             boundingRect = input.getBoundingClientRect(),
@@ -42,7 +60,7 @@ window.addEventListener && (function(document, window, bodyEl, htmlEl) {
                         
                         for (var errorType in validity) {
                             if (validity[errorType]) {
-                                errorArray.push(errorType);
+                                classesArray.push(buildErrorClass(errorType, input));
                             }
                         }
                         
@@ -56,7 +74,7 @@ window.addEventListener && (function(document, window, bodyEl, htmlEl) {
                         }
                         
                         validityEl.textContent = errorMessage || "";
-                        validityEl.className = errorArray.join(" ");
+                        validityEl.className = classesArray.join(" ");
                         validityEl.style.top = boundingRect.bottom + scrollTop - clientTop + "px";
                         validityEl.style.left = boundingRect.left + scrollLeft - clientLeft + "px";
                         
@@ -100,7 +118,7 @@ window.addEventListener && (function(document, window, bodyEl, htmlEl) {
         
         // TODO: input[type=number]
         
-        HTMLInputElement.prototype.checkValidity = function() {
+        HTMLInputElement.prototype.checkValidity = HTMLTextAreaElement.prototype.checkValidity = function() {
             var validity = new ValidityState();
             
             switch(this.type) {
@@ -137,14 +155,16 @@ window.addEventListener && (function(document, window, bodyEl, htmlEl) {
                             validity.valid = !validity.typeMismatch;
                             break;
                         }
-                        
-                        var pattern = this.getAttribute("pattern");
-                        
-                        if (pattern) {
-                            pattern = new RegExp("^(?:" + pattern + ")$");
+
+                        if (this.type !== "textarea") {
+                            var pattern = this.getAttribute("pattern");
                             
-                            validity.patternMismatch = (pattern && !pattern.test(this.value));
-                            validity.valid = !validity.patternMismatch;
+                            if (pattern) {
+                                pattern = new RegExp("^(?:" + pattern + ")$");
+                                
+                                validity.patternMismatch = !pattern.test(this.value);
+                                validity.valid = !validity.patternMismatch;
+                            }    
                         }
                     } else {
                         validity.valueMissing = !!this.getAttribute("required");
@@ -161,22 +181,6 @@ window.addEventListener && (function(document, window, bodyEl, htmlEl) {
             this.validity = validity;
             
             // TODO: set validationMessage
-            
-            return validity.valid;
-        };
-        
-        HTMLTextAreaElement.prototype.checkValidity = function() {
-            var validity = new ValidityState();
-            
-            validity.valueMissing = (this.value && !this.getAttribute("required"));
-            validity.valid = !validity.valueMissing;
-            
-            if (this.validity) {
-                validity.customError = this.validity.customError;
-                validity.valid &= !validity.customError;
-            }
-            
-            this.validity = validity;
             
             return validity.valid;
         };
@@ -239,4 +243,4 @@ window.addEventListener && (function(document, window, bodyEl, htmlEl) {
         }
     }, true);
     
-})(document, window, document.bodyEl, document.documentElement);
+})(document, window, document.body, document.documentElement);
