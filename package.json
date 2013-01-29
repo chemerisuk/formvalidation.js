@@ -5,6 +5,8 @@
     "author": {
         "name": "Maksim Chemerisuk"
     },
+    "description": "HTML5 form validation api polyfill.",
+    "readmeFilename": "README.md",
     "repository": {
         "type": "git",
         "url": "https://github.com/chemerisuk/formvalidation.js"
