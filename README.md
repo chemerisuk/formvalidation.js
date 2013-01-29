@@ -1,4 +1,4 @@
-fromvalidation.js
+formvalidation.js
 =============
 HTML5 form validation api polyfill.
 
