@@ -12,7 +12,7 @@ Features
 
 Example usage
 -------------
-All you need is to include several additional files to your page:
+All you need is to include several additional files on your page:
 ```html
 <html>
   <head>
@@ -30,15 +30,39 @@ This plugin doesn't require any initialization, it just works. Thats why it's pe
 
 JavaScript API
 --------------
-See "Constraint Validation API" section from https://developer.mozilla.org/en-US/docs/HTML/Forms_in_HTML
-
-Customization
--------------
-_TODO_
+Plugin uses standards-based javascript API to display validation messages programmatically. So you may use any source which describes HTML5 Constraint Validation API. For example look at the appropriate section on https://developer.mozilla.org/en-US/docs/HTML/Forms_in_HTML.
 
 Internationalization
 --------------------
-_TODO_
+The plugin stores message strings in css. To display them it uses `:before` pseudoelement:
+```css
+#validity.value-missing:after {
+    content: "Please fill this field"
+}
+
+#validity.type-mismatch:after {
+    content: "Value has illegal format"
+}
+
+#validity.email-mismatch:after {
+    content: "There is should be a valid email"
+}
+```
+To localize strings in css `:lang()` selector is used:
+```css
+#validity.value-missing:lang(ru):after {
+    content: "Это поле не может быть пустым"
+}
+
+#validity.type-mismatch:lang(ru):after {
+    content: "Введенное значение имеет недопустимый формат"
+}
+
+#validity.email-mismatch:after {
+    content: "Здесь должен быть правильный email"
+}
+```
+So it means you need an appropriate `lang` attribute value for the `<html>` element to change language of validation messages. But this is usually not an issuee.
 
 Browser support
 ---------------

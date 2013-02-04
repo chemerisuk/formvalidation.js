@@ -57,7 +57,7 @@
 }
 
 #validity.email-mismatch:after {
-    content: "Value should be a valid email"
+    content: "There is should be a valid email"
 }
 
 #validity.value-missing:lang(ru):after {
@@ -66,4 +66,8 @@
 
 #validity.type-mismatch:lang(ru):after {
     content: "Введенное значение имеет недопустимый формат"
+}
+
+#validity.email-mismatch:lang(ru):after {
+    content: "Здесь должен быть правильный email"
 }
