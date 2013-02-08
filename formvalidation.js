@@ -6,8 +6,10 @@
  * Copyright (c) 2013 Maksim Chemerisuk
  *
  */
-window.addEventListener && (function(document, window, bodyEl, htmlEl) {
-    var bindEvent = function(eventType, capturing, handler) {
+window.addEventListener && (function(document, window) {
+    var bodyEl = document.body, 
+        htmlEl = document.documentElement,
+        bindEvent = function(eventType, capturing, handler) {
             document.addEventListener(eventType, handler, capturing);
         },
         fireEvent = function(eventType, thisPtr) {
@@ -186,7 +188,7 @@ window.addEventListener && (function(document, window, bodyEl, htmlEl) {
             if (this.validity) {
                 validity.customError = this.validity.customError;
                 validity.validationMessage = this.validity.validationMessage;
-                validity.valid &= !validity.customError;
+                validity.valid = validity.valid && !validity.customError;
             }
             
             this.validity = validity;
@@ -196,7 +198,7 @@ window.addEventListener && (function(document, window, bodyEl, htmlEl) {
         
         HTMLFormElement.prototype.checkValidity = function() {
             return none(this, function(input) {
-                return !input.checkValidity();
+                return !input.checkValidity || input.checkValidity();
             });
         };
     }
@@ -250,4 +252,4 @@ window.addEventListener && (function(document, window, bodyEl, htmlEl) {
         }
     });
     
-})(document, window, document.body, document.documentElement);
+})(document, window);
