@@ -7,7 +7,7 @@
  *
  */
 window.addEventListener && (function(document, window) {
-    var bodyEl = document.body, 
+    var bodyEl = document.body,
         htmlEl = document.documentElement,
         bindEvent = function(eventType, capturing, handler) {
             document.addEventListener(eventType, handler, capturing);
@@ -121,14 +121,18 @@ window.addEventListener && (function(document, window) {
             this.valueMissing = false;
         };
         
-        HTMLInputElement.prototype.setCustomValidity = HTMLTextAreaElement.prototype.setCustomValidity = function(message) {
+        HTMLInputElement.prototype.setCustomValidity =
+        HTMLTextAreaElement.prototype.setCustomValidity =
+        HTMLSelectElement.prototype.setCustomValidity = function(message) {
             this.validationMessage = message;
             this.validity.customError = !!message;
         };
         
         // TODO: input[type=number]
         
-        HTMLInputElement.prototype.checkValidity = HTMLTextAreaElement.prototype.checkValidity = function() {
+        HTMLInputElement.prototype.checkValidity =
+        HTMLTextAreaElement.prototype.checkValidity =
+        HTMLSelectElement.prototype.checkValidity = function() {
             var validity = new ValidityState();
             
             switch(this.type) {
@@ -136,6 +140,11 @@ window.addEventListener && (function(document, window) {
                 case "submit":
                 case "button":
                     return true;
+
+                case "select-one":
+                case "select-multiple":
+                    // for a select only check custom error case
+                    break;
                 
                 case "radio":
                     if (!this.checked && this.getAttribute("required")) {
@@ -210,8 +219,10 @@ window.addEventListener && (function(document, window) {
     });
     
     bindEvent("change", false, function(e) {
-        if (e.target.checkValidity()) {
-            tooltipApi.hide(e.target, false);
+        var target = e.target;
+
+        if (target.checkValidity()) {
+            tooltipApi.hide(target, false);
         }
     });
     
