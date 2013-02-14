@@ -147,7 +147,7 @@ window.addEventListener && (function(document, window) {
                     break;
                 
                 case "radio":
-                    if (!this.checked && this.getAttribute("required")) {
+                    if (!this.checked && this.hasAttribute("required")) {
                         var name = this.name;
 
                         validity.valueMissing = none(this.form, function(input) {
@@ -157,7 +157,7 @@ window.addEventListener && (function(document, window) {
                     }
                     break;
                 case "checkbox":
-                    validity.valueMissing = (!this.checked && this.getAttribute("required"));
+                    validity.valueMissing = (!this.checked && this.hasAttribute("required"));
                     validity.valid = !validity.valueMissing;
                     break;
                 default: {
@@ -188,7 +188,7 @@ window.addEventListener && (function(document, window) {
                             }
                         }
                     } else {
-                        validity.valueMissing = !!this.getAttribute("required");
+                        validity.valueMissing = this.hasAttribute("required");
                         validity.valid = !validity.valueMissing;
                     }
                 }
