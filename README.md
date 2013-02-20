@@ -62,7 +62,13 @@ To localize strings in css `:lang()` selector is used:
     content: "Здесь должен быть правильный email"
 }
 ```
-So it means you need an appropriate `lang` attribute value for the `<html>` element to change language of validation messages. But this is usually not an issuee.
+So it means you need an appropriate `lang` attribute value for the `<html>` element to change language of validation messages.
+
+TODOs
+-----
+1) add `input[type=date]` support with calendar control
+2) add `input[type=number]` support with spin buttons
+3) IE8 support
 
 Browser support
 ---------------
