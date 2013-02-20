@@ -66,9 +66,9 @@ So it means you need an appropriate `lang` attribute value for the `<html>` elem
 
 TODOs
 -----
-1) add `input[type=date]` support with calendar control
-2) add `input[type=number]` support with spin buttons
-3) IE8 support
+1. add `input[type=date]` support with calendar control
+2. add `input[type=number]` support with spin buttons
+3. IE8 support
 
 Browser support
 ---------------
