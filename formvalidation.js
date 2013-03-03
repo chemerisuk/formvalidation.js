@@ -10,8 +10,11 @@ window.addEventListener && (function(document, window) {
     var bodyEl = document.body,
         headEl = document.head,
         htmlEl = document.documentElement,
-        bindEvent = function(eventType, capturing, handler) {
-            document.addEventListener(eventType, handler, capturing);
+        bindEvent = function(eventType, handler, capturing) {
+            document.addEventListener(eventType, handler, !!capturing);
+        },
+        bindCapturingEvent = function(eventType, handler) {
+            bindEvent(eventType, handler, true);
         },
         listenSelector = (function() {
             // use trick discovered by Daniel Buchner to style dateinputs
@@ -48,7 +51,7 @@ window.addEventListener && (function(document, window) {
                 );
 
                 startNames.forEach(function(name){
-                    bindEvent(name, false, function(event) {
+                    bindEvent(name, function(event) {
                         if (event.animationName === animationName) {
                             fn.call(this, event, selector);
                         }
@@ -256,13 +259,13 @@ window.addEventListener && (function(document, window) {
         };
     }
     
-    bindEvent("invalid", true, function(e) {
+    bindCapturingEvent("invalid", function(e) {
         tooltipApi.show(e.target, false);
         // don't show native tooltip
         e.preventDefault();
     });
     
-    bindEvent("change", false, function(e) {
+    bindEvent("change", function(e) {
         var target = e.target;
 
         if (target.checkValidity()) {
@@ -270,7 +273,7 @@ window.addEventListener && (function(document, window) {
         }
     });
     
-    bindEvent("input", false, function(e) {
+    bindEvent("input", function(e) {
         var target = e.target;
         // polyfill textarea maxlength attribute
         if (target.type == "textarea") {
@@ -286,7 +289,7 @@ window.addEventListener && (function(document, window) {
     });
     
     // validate all elements on a form submit
-    bindEvent("submit", true, function(e) {
+    bindCapturingEvent("submit", function(e) {
         if (e.target.checkValidity()) {
             tooltipApi.hide(null, true);
         } else {
@@ -296,12 +299,12 @@ window.addEventListener && (function(document, window) {
     });
     
     // hide tooltip when user resets the form
-    bindEvent("reset", false, function(e) {
+    bindEvent("reset", function(e) {
         tooltipApi.hide(null, true);
     });
     
     // hide tooltip when user goes to other part of page
-    bindEvent("click", true, function(e) {
+    bindCapturingEvent("click", function(e) {
         if (e.target.form !== tooltipApi.getForm()) {
             tooltipApi.hide(null, true);
         }
