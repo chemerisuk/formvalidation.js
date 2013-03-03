@@ -328,39 +328,33 @@ window.addEventListener && (function(document, window) {
         calendarEl.innerHTML = (function() {
             var content = "<table><caption></caption><tbody>";
 
-            content += "<tr>";
-                content += "<th><th><th><th><th><th><th>";
-                content += "</tr>";
-
-            content += "<tr>";
-                content += "<td class='prev-month'><td class='prev-month'><td class='prev-month'><td class='prev-month'><td><td><td>";
-                content += "</tr>";
-
-            for (var i = 0; i < 4; ++i) {
+            for (var i = 0; i < 7; ++i) {
                 content += "<tr>";
-                //content += i ? "<td><td><td><td><td><td><td>" : "<th><th><th><th><th><th><th>";
-                content += "<td><td><td><td><td><td><td>";
+                content += i ? "<td><td><td><td><td><td><td>" : "<th><th><th><th><th><th><th>";
                 content += "</tr>";
             }
-
-            content += "<tr>";
-                content += "<td class='next-month'><td class='next-month'><td class='next-month'><td class='next-month'><td class='next-month'><td class='next-month'><td class='next-month'>";
-                content += "</tr>";
 
             content += "</tbody></table>";
 
             return content;
         })();
 
+        calendarEl.setAttribute("hidden", "");
+
         calendarEl.onclick = function(e) {
-            var target = e.target, parent = target.parentNode;
+            var target = e.target,
+                parent = target.parentNode,
+                currentYear = currentDate.getFullYear(),
+                currentMonth = currentDate.getMonth();
 
             if (target.nodeName === "TD") {
-                currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(),
+                currentDate = new Date(currentYear, currentMonth,
                     target.cellIndex + 3 + (parent.rowIndex - 1) * 7 -
-                        new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay());
+                        new Date(currentYear, currentMonth, 1).getDay());
 
                 currentEl.value = currentDate.toISOString().split("T")[0];
+
+                calendarAPI.hideFor();
             }
         };
 
@@ -376,13 +370,39 @@ window.addEventListener && (function(document, window) {
                 if (calendarEl.parentNode === null) {
                     bodyEl.appendChild(calendarEl);
                 }
+                // switch calendar to appropriate month
+                this.calendar(currentDate = el.value ? new Date(el.value) : Date.now());
 
                 calendarEl.style.left = offset.left + "px";
                 calendarEl.style.top = offset.bottom + "px";
 
                 calendarEl.removeAttribute("hidden");
+            },
+            hideFor: function(el) {
+                calendarEl.setAttribute("hidden", "");
+            },
+            calendar: function(date) {
+                var tableEl = calendarEl.firstChild,
+                    startDayOfWeek = new Date(date.getFullYear(), date.getMonth(), 0).getDay(),
+                    iterDate = new Date(date.getFullYear(), date.getMonth(), -startDayOfWeek);
+                // setup appropriate counter-reset property
+                tableEl.style["counter-reset"] = "prev_counter " + iterDate.getDate() + " current_counter 0 next_counter 0";
 
-                currentDate = el.value ? new Date(el.value) : Date.now();
+                Array.prototype.forEach.call(tableEl.querySelectorAll("td"), function(cell) {
+                    // increment date
+                    iterDate.setDate(iterDate.getDate() + 1);
+
+                    var mDiff = date.getMonth() - iterDate.getMonth(),
+                        dDiff = date.getDate() - iterDate.getDate();
+
+                    if (date.getFullYear() != iterDate.getFullYear()) {
+                        mDiff *= -1;
+                    }
+
+                    cell.className = mDiff ?
+                        (mDiff > 0 ? "prev-calendar-item" : "next-calendar-item") :
+                        (dDiff ? "calendar-item" : "current-calendar-item");
+                });
             }
         };
     })();
@@ -403,8 +423,12 @@ window.addEventListener && (function(document, window) {
 
             if (input.className.indexOf("dateinput") >= 0) {
                 calendarAPI.showFor(input);
+
+                return;
             }
         }
+
+        calendarAPI.hideFor();
     });
 
 })(document, window);

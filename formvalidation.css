@@ -96,7 +96,6 @@
 #formvalidationjs_calendar table {
     table-layout: fixed;
     border-spacing: 0;
-    counter-reset: prev_counter 24 current_counter 0 next_counter 0;
 }
 
 #formvalidationjs_calendar td {
@@ -107,24 +106,33 @@
     content: counter(current_counter);
 }
 
-#formvalidationjs_calendar .prev-month,
-#formvalidationjs_calendar .next-month {
-    color: graytext;
+#formvalidationjs_calendar [class*="calendar-item"]:hover {
+    background: #EEE;
 }
 
-#formvalidationjs_calendar .prev-month {
+#formvalidationjs_calendar .current-calendar-item {
+    background: #498CE2;
+    color: #FFF;
+}
+
+#formvalidationjs_calendar .prev-calendar-item,
+#formvalidationjs_calendar .next-calendar-item {
+    color: #AAA;
+}
+
+#formvalidationjs_calendar .prev-calendar-item {
     counter-increment: prev_counter;
 }
 
-#formvalidationjs_calendar .prev-month:before {
+#formvalidationjs_calendar .prev-calendar-item:before {
     content: counter(prev_counter);
 }
 
-#formvalidationjs_calendar .next-month {
+#formvalidationjs_calendar .next-calendar-item {
     counter-increment: next_counter;
 }
 
-#formvalidationjs_calendar .next-month:before {
+#formvalidationjs_calendar .next-calendar-item:before {
     content: counter(next_counter);
 }
 
@@ -149,7 +157,7 @@
 }
 
 #formvalidationjs_calendar th:nth-child(6):before {
-    content: "Mon"
+    content: "Sat"
 }
 
 #formvalidationjs_calendar th:nth-child(7):before {
