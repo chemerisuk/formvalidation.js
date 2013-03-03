@@ -71,3 +71,87 @@
 #validity.email-mismatch:lang(ru):after {
     content: "Здесь должен быть правильный email"
 }
+
+/* calendar */
+#formvalidationjs_calendar {
+    position: absolute;
+    border: 1px solid #CCC;
+    background: white;
+}
+
+#formvalidationjs_calendar th,
+#formvalidationjs_calendar td {
+    width: 3em;
+    height: 2em;
+    border: 1px solid #DDD;
+    text-indent: 0.5em;
+    vertical-align: middle;
+    text-align: left;
+}
+
+#formvalidationjs_calendar th {
+    font-weight: bold;
+}
+
+#formvalidationjs_calendar table {
+    table-layout: fixed;
+    border-spacing: 0;
+    counter-reset: prev_counter 24 current_counter 0 next_counter 0;
+}
+
+#formvalidationjs_calendar td {
+    counter-increment: current_counter;
+}
+
+#formvalidationjs_calendar td:before {
+    content: counter(current_counter);
+}
+
+#formvalidationjs_calendar .prev-month,
+#formvalidationjs_calendar .next-month {
+    color: graytext;
+}
+
+#formvalidationjs_calendar .prev-month {
+    counter-increment: prev_counter;
+}
+
+#formvalidationjs_calendar .prev-month:before {
+    content: counter(prev_counter);
+}
+
+#formvalidationjs_calendar .next-month {
+    counter-increment: next_counter;
+}
+
+#formvalidationjs_calendar .next-month:before {
+    content: counter(next_counter);
+}
+
+#formvalidationjs_calendar th:nth-child(1):before {
+    content: "Mon"
+}
+
+#formvalidationjs_calendar th:nth-child(2):before {
+    content: "Tue"
+}
+
+#formvalidationjs_calendar th:nth-child(3):before {
+    content: "Wed"
+}
+
+#formvalidationjs_calendar th:nth-child(4):before {
+    content: "Thu"
+}
+
+#formvalidationjs_calendar th:nth-child(5):before {
+    content: "Fri"
+}
+
+#formvalidationjs_calendar th:nth-child(6):before {
+    content: "Mon"
+}
+
+#formvalidationjs_calendar th:nth-child(7):before {
+    content: "Sun"
+}

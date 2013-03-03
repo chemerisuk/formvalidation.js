@@ -16,6 +16,13 @@ window.addEventListener && (function(document, window) {
         bindCapturingEvent = function(eventType, handler) {
             bindEvent(eventType, handler, true);
         },
+        fireEvent = function(eventType, thisPtr) {
+            var evt = document.createEvent("Event");
+        
+            evt.initEvent(eventType, false, false);
+
+            thisPtr.dispatchEvent(evt);
+        },
         listenSelector = (function() {
             // use trick discovered by Daniel Buchner to style dateinputs
             // https://github.com/csuwldcat/SelectorListener
@@ -58,13 +65,20 @@ window.addEventListener && (function(document, window) {
                     });
                 });
             };
-        })();
-        fireEvent = function(eventType, thisPtr) {
-            var evt = document.createEvent("Event");
-        
-            evt.initEvent(eventType, false, false);
+        })(),
+        calcOffset = function(el) {
+            var boundingRect = el.getBoundingClientRect(),
+                clientTop = htmlEl.clientTop || bodyEl.clientTop || 0,
+                clientLeft = htmlEl.clientLeft || bodyEl.clientLeft || 0,
+                scrollTop = window.pageYOffset || htmlEl.scrollTop || bodyEl.scrollTop,
+                scrollLeft = window.pageXOffset || htmlEl.scrollLeft || bodyEl.scrollLeft;
 
-            thisPtr.dispatchEvent(evt);
+            return {
+                top: boundingRect.top + scrollTop - clientTop,
+                left: boundingRect.left + scrollLeft - clientLeft,
+                right: boundingRect.right + scrollLeft - clientLeft,
+                bottom: boundingRect.bottom + scrollTop - clientTop
+            };
         },
         none = function(form, test) {
             var inputs = Array.prototype.slice.call(form.elements, 0);
@@ -108,12 +122,7 @@ window.addEventListener && (function(document, window) {
                             validity = input.validity,
                             classesArray = [],
                             errorMessage,
-                            // position vars
-                            boundingRect = input.getBoundingClientRect(),
-                            clientTop = htmlEl.clientTop || bodyEl.clientTop || 0,
-                            clientLeft = htmlEl.clientLeft || bodyEl.clientLeft || 0,
-                            scrollTop = (window.pageYOffset || htmlEl.scrollTop || bodyEl.scrollTop),
-                            scrollLeft = (window.pageXOffset || htmlEl.scrollLeft || bodyEl.scrollLeft);
+                            offset = calcOffset(input);
                         
                         for (var errorType in validity) {
                             if (validity[errorType]) {
@@ -132,8 +141,8 @@ window.addEventListener && (function(document, window) {
                         
                         validityEl.textContent = errorMessage || "";
                         validityEl.className = classesArray.join(" ");
-                        validityEl.style.top = boundingRect.bottom + scrollTop - clientTop + "px";
-                        validityEl.style.left = boundingRect.left + scrollLeft - clientLeft + "px";
+                        validityEl.style.top = offset.bottom + "px";
+                        validityEl.style.left = offset.left + "px";
                         
                         invalidInput = input;
                     }
@@ -175,8 +184,6 @@ window.addEventListener && (function(document, window) {
             this.validity.customError = !!message;
         };
         
-        // TODO: input[type=number]
-        
         HTMLInputElement.prototype.checkValidity =
         HTMLTextAreaElement.prototype.checkValidity =
         HTMLSelectElement.prototype.checkValidity = function() {
@@ -203,10 +210,12 @@ window.addEventListener && (function(document, window) {
                         validity.valid = !validity.valueMissing;
                     }
                     break;
+
                 case "checkbox":
                     validity.valueMissing = (!this.checked && this.hasAttribute("required"));
                     validity.valid = !validity.valueMissing;
                     break;
+
                 default: {
                     if (this.value) {
                         switch (this.getAttribute("type")) {
@@ -283,13 +292,12 @@ window.addEventListener && (function(document, window) {
                 target.value = target.value.substr(0, maxlength);
             }
         }
-        
         // hide tooltip on user input
         tooltipApi.hide(target, true);
     });
     
-    // validate all elements on a form submit
     bindCapturingEvent("submit", function(e) {
+        // validate all elements on a form submit
         if (e.target.checkValidity()) {
             tooltipApi.hide(null, true);
         } else {
@@ -298,22 +306,105 @@ window.addEventListener && (function(document, window) {
         }
     });
     
-    // hide tooltip when user resets the form
     bindEvent("reset", function(e) {
+        // hide tooltip when user resets the form
         tooltipApi.hide(null, true);
     });
     
-    // hide tooltip when user goes to other part of page
     bindCapturingEvent("click", function(e) {
+        // hide tooltip when user goes to other part of page
         if (e.target.form !== tooltipApi.getForm()) {
             tooltipApi.hide(null, true);
         }
     });
 
+    // calendar support
+
+    var calendarAPI = (function() {
+        var calendarEl = document.createElement("div"),
+            currentEl, currentDate;
+        
+        calendarEl.id = "formvalidationjs_calendar";
+        calendarEl.innerHTML = (function() {
+            var content = "<table><caption></caption><tbody>";
+
+            content += "<tr>";
+                content += "<th><th><th><th><th><th><th>";
+                content += "</tr>";
+
+            content += "<tr>";
+                content += "<td class='prev-month'><td class='prev-month'><td class='prev-month'><td class='prev-month'><td><td><td>";
+                content += "</tr>";
+
+            for (var i = 0; i < 4; ++i) {
+                content += "<tr>";
+                //content += i ? "<td><td><td><td><td><td><td>" : "<th><th><th><th><th><th><th>";
+                content += "<td><td><td><td><td><td><td>";
+                content += "</tr>";
+            }
+
+            content += "<tr>";
+                content += "<td class='next-month'><td class='next-month'><td class='next-month'><td class='next-month'><td class='next-month'><td class='next-month'><td class='next-month'>";
+                content += "</tr>";
+
+            content += "</tbody></table>";
+
+            return content;
+        })();
+
+        calendarEl.onclick = function(e) {
+            var target = e.target, parent = target.parentNode;
+
+            if (target.nodeName === "TD") {
+                currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(),
+                    target.cellIndex + 3 + (parent.rowIndex - 1) * 7 -
+                        new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay());
+
+                currentEl.value = currentDate.toISOString().split("T")[0];
+            }
+        };
+
+        return {
+            initFor: function(el) {
+                // remove legacy dateinput if it exists
+                el.type = "text";
+                el.className += " dateinput";
+            },
+            showFor: function(el) {
+                var offset = calcOffset(currentEl = el);
+
+                if (calendarEl.parentNode === null) {
+                    bodyEl.appendChild(calendarEl);
+                }
+
+                calendarEl.style.left = offset.left + "px";
+                calendarEl.style.top = offset.bottom + "px";
+
+                calendarEl.removeAttribute("hidden");
+
+                currentDate = el.value ? new Date(el.value) : Date.now();
+            }
+        };
+    })();
+
     listenSelector("input[type='date']", function(e) {
+        // init calendar for browsers that support listenSelector
+        calendarAPI.initFor(e.target);
+    });
+
+    bindCapturingEvent("focus", function(e) {
         var input = e.target;
-        // remove legacy dateinput
-        input.type = "text";
+
+        if (input.nodeName === "INPUT") {
+            if (input.getAttribute("type") === "date") {
+                // init calendar for browsers that don't support listenSelector
+                calendarAPI.initFor(input);
+            }
+
+            if (input.className.indexOf("dateinput") >= 0) {
+                calendarAPI.showFor(input);
+            }
+        }
     });
 
 })(document, window);
