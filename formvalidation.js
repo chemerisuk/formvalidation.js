@@ -371,7 +371,7 @@ window.addEventListener && (function(document, window) {
                     bodyEl.appendChild(calendarEl);
                 }
                 // switch calendar to appropriate month
-                this.calendar(currentDate = el.value ? new Date(el.value) : Date.now());
+                this.refresh(currentDate = el.value ? new Date(el.value) : Date.now());
 
                 calendarEl.style.left = offset.left + "px";
                 calendarEl.style.top = offset.bottom + "px";
@@ -381,29 +381,35 @@ window.addEventListener && (function(document, window) {
             hideFor: function(el) {
                 calendarEl.setAttribute("hidden", "");
             },
-            calendar: function(date) {
+            refresh: (function() {
                 var tableEl = calendarEl.firstChild,
-                    startDayOfWeek = new Date(date.getFullYear(), date.getMonth(), 0).getDay(),
-                    iterDate = new Date(date.getFullYear(), date.getMonth(), -startDayOfWeek);
-                // setup appropriate counter-reset property
-                tableEl.style["counter-reset"] = "prev_counter " + iterDate.getDate() + " current_counter 0 next_counter 0";
+                    tableCells = Array.prototype.splice.call(tableEl.querySelectorAll("td"), 0);
 
-                Array.prototype.forEach.call(tableEl.querySelectorAll("td"), function(cell) {
-                    // increment date
-                    iterDate.setDate(iterDate.getDate() + 1);
+                return function(date) {
+                    var tableEl = calendarEl.firstChild,
+                        iterDate = new Date(date.getFullYear(), date.getMonth(), 0);
+                    // move to begin of the start week
+                    iterDate.setDate(iterDate.getDate() - iterDate.getDay());
+                    // setup appropriate counter-reset property
+                    tableEl.style["counter-reset"] = "prev_counter " + iterDate.getDate() + " current_counter 0 next_counter 0";
+                    // update class names
+                    tableCells.forEach(function(cell) {
+                        // increment date
+                        iterDate.setDate(iterDate.getDate() + 1);
+                        // calc differences
+                        var mDiff = date.getMonth() - iterDate.getMonth(),
+                            dDiff = date.getDate() - iterDate.getDate();
 
-                    var mDiff = date.getMonth() - iterDate.getMonth(),
-                        dDiff = date.getDate() - iterDate.getDate();
+                        if (date.getFullYear() != iterDate.getFullYear()) {
+                            mDiff *= -1;
+                        }
 
-                    if (date.getFullYear() != iterDate.getFullYear()) {
-                        mDiff *= -1;
-                    }
-
-                    cell.className = mDiff ?
-                        (mDiff > 0 ? "prev-calendar-item" : "next-calendar-item") :
-                        (dDiff ? "calendar-item" : "current-calendar-item");
-                });
-            }
+                        cell.className = mDiff ?
+                            (mDiff > 0 ? "prev-calendar-item" : "next-calendar-item") :
+                            (dDiff ? "calendar-item" : "current-calendar-item");
+                    });
+                };
+            })()
         };
     })();
 
