@@ -359,47 +359,60 @@ window.addEventListener && (function(document, window) {
                     target.cellIndex + 3 + (parent.rowIndex - 1) * 7 -
                         new Date(currentYear, currentMonth, 1).getDay());
 
-                if (targetDate.getFullYear() != currentDate.getFullYear() ||
-                    targetDate.getMonth() != currentDate.getMonth() ||
+                if (targetDate.getFullYear() != currentYear ||
+                    targetDate.getMonth() != currentMonth ||
                     targetDate.getDate() != currentDate.getDate()) {
                     // update input value
-                    currentEl.value = (currentDate = targetDate).toISOString().split("T")[0];
+                    currentEl.value = targetDate.toISOString().split("T")[0];
                     // trigger blur manually to hide calendar control
                     currentEl.blur();
                 }
             } else if (~target.className.indexOf("calendar-btn")) {
-                calendarAPI.refresh(new Date(currentDate.getFullYear(),
-                    currentDate.getMonth() + (target.className === "next-calendar-btn" ? 1 : -1), 1));
+                calendarAPI.refresh(new Date(currentYear,
+                    currentMonth + (target.className === "next-calendar-btn" ? 1 : -1), 1));
             }
         };
 
         return {
-            initFor: function(el) {
-                // remove legacy dateinput if it exists
-                el.type = "text";
-                el.className += " dateinput";
-                // update calendar on user input
-                el.addEventListener("input", function() {
-                    if (el.value) {
-                        calendarAPI.refresh(new Date(el.value));
+            capture: function(el) {
+                if (el.nodeName === "INPUT") {
+                    // init calendar for browsers that don't support listenSelector
+                    if (el.getAttribute("type") === "date") {
+                        // remove legacy dateinput if it exists
+                        el.type = "text";
+                        el.className += " dateinput";
+                        // update calendar when user types
+                        el.addEventListener("input", function() {
+                            if (el.value) {
+                                calendarAPI.refresh(new Date(el.value));
+                            }
+                        }, false);
                     }
-                }, false);
+
+                    if (~el.className.indexOf("dateinput")) {
+                        currentEl = el;
+
+                        return true;
+                    }
+                }
+
+                return false;
             },
-            showFor: function(el) {
-                var offset = calcOffset(currentEl = el);
+            show: function() {
+                var offset = calcOffset(currentEl);
 
                 if (calendarEl.parentNode === null) {
                     bodyEl.appendChild(calendarEl);
                 }
                 // switch calendar to appropriate month
-                this.refresh(el.value ? new Date(el.value) : new Date());
+                this.refresh(currentEl.value ? new Date(currentEl.value) : new Date());
 
                 calendarEl.style.left = offset.left + "px";
                 calendarEl.style.top = offset.bottom + "px";
 
                 calendarEl.removeAttribute("hidden");
             },
-            hideFor: function(el) {
+            hide: function() {
                 if (currentEl) {
                     calendarEl.setAttribute("hidden", "");
                     currentEl = null;
@@ -447,26 +460,19 @@ window.addEventListener && (function(document, window) {
 
     listenSelector("input[type='date']", function(e) {
         // init calendar for browsers that support listenSelector
-        calendarAPI.initFor(e.target);
+        calendarAPI.capture(e.target);
     });
 
     bindCapturingEvent("focus", function(e) {
-        var input = e.target;
+        var el = e.target;
 
-        if (input.nodeName === "INPUT") {
-            if (input.getAttribute("type") === "date") {
-                // init calendar for browsers that don't support listenSelector
-                calendarAPI.initFor(input);
-            }
-
-            if (input.className.indexOf("dateinput") >= 0) {
-                calendarAPI.showFor(input);
-            }
+        if (calendarAPI.capture(el)) {
+            calendarAPI.show();
         }
     });
 
     bindCapturingEvent("blur", function() {
-        calendarAPI.hideFor();
+        calendarAPI.hide();
     });
 
 })(document, window);
