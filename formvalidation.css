@@ -82,6 +82,8 @@
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+
+    box-shadow: 0 0 1em #CCC;
 }
 
 #formvalidationjs_calendar caption {

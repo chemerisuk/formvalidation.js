@@ -326,12 +326,7 @@ window.addEventListener && (function(document, window) {
         
         calendarEl.id = "formvalidationjs_calendar";
         calendarEl.innerHTML = (function() {
-            var content = "<table><caption>";
-
-            content += "<a class='prev-calendar-btn'></a>";
-            content += "<strong></strong>";
-            content += "<a class='next-calendar-btn'></a>";
-            content += "</caption><tbody>";
+            var content = "<table><caption><a class='prev-calendar-btn'></a><strong></strong><a class='next-calendar-btn'></a></caption><tbody>";
 
             for (var i = 0; i < 7; ++i) {
                 content += "<tr>";
@@ -345,6 +340,12 @@ window.addEventListener && (function(document, window) {
         })();
 
         calendarEl.setAttribute("hidden", "");
+
+        calendarEl.onmousedown = function(e) {
+            // fix problems with loosing focus when click on calendar
+            e.preventDefault();
+            e.stopPropagation();
+        };
 
         calendarEl.onclick = function(e) {
             var target = e.target,
@@ -363,8 +364,8 @@ window.addEventListener && (function(document, window) {
                     targetDate.getDate() != currentDate.getDate()) {
                     // update input value
                     currentEl.value = (currentDate = targetDate).toISOString().split("T")[0];
-                    currentEl.select();
-                    calendarAPI.hideFor();
+                    // trigger blur manually to hide calendar control
+                    currentEl.blur();
                 }
             } else if (~target.className.indexOf("calendar-btn")) {
                 calendarAPI.refresh(new Date(currentDate.getFullYear(),
@@ -399,7 +400,10 @@ window.addEventListener && (function(document, window) {
                 calendarEl.removeAttribute("hidden");
             },
             hideFor: function(el) {
-                calendarEl.setAttribute("hidden", "");
+                if (currentEl) {
+                    calendarEl.setAttribute("hidden", "");
+                    currentEl = null;
+                }
             },
             refresh: (function() {
                 var tableEl = calendarEl.firstChild,
@@ -457,11 +461,11 @@ window.addEventListener && (function(document, window) {
 
             if (input.className.indexOf("dateinput") >= 0) {
                 calendarAPI.showFor(input);
-
-                return;
             }
         }
+    });
 
+    bindCapturingEvent("blur", function() {
         calendarAPI.hideFor();
     });
 
