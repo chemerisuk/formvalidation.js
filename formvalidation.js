@@ -326,7 +326,12 @@ window.addEventListener && (function(document, window) {
         
         calendarEl.id = "formvalidationjs_calendar";
         calendarEl.innerHTML = (function() {
-            var content = "<table><caption></caption><tbody>";
+            var content = "<table><caption>";
+
+            content += "<a class='prev-calendar-btn'></a>";
+            content += "<strong></strong>";
+            content += "<a class='next-calendar-btn'></a>";
+            content += "</caption><tbody>";
 
             for (var i = 0; i < 7; ++i) {
                 content += "<tr>";
@@ -345,16 +350,25 @@ window.addEventListener && (function(document, window) {
             var target = e.target,
                 parent = target.parentNode,
                 currentYear = currentDate.getFullYear(),
-                currentMonth = currentDate.getMonth();
+                currentMonth = currentDate.getMonth(),
+                targetDate;
 
-            if (target.nodeName === "TD") {
-                currentDate = new Date(currentYear, currentMonth,
+            if (~target.className.indexOf("calendar-item")) {
+                targetDate = new Date(currentYear, currentMonth,
                     target.cellIndex + 3 + (parent.rowIndex - 1) * 7 -
                         new Date(currentYear, currentMonth, 1).getDay());
 
-                currentEl.value = currentDate.toISOString().split("T")[0];
-
-                calendarAPI.hideFor();
+                if (targetDate.getFullYear() != currentDate.getFullYear() ||
+                    targetDate.getMonth() != currentDate.getMonth() ||
+                    targetDate.getDate() != currentDate.getDate()) {
+                    // update input value
+                    currentEl.value = (currentDate = targetDate).toISOString().split("T")[0];
+                    currentEl.select();
+                    calendarAPI.hideFor();
+                }
+            } else if (~target.className.indexOf("calendar-btn")) {
+                calendarAPI.refresh(new Date(currentDate.getFullYear(),
+                    currentDate.getMonth() + (target.className === "next-calendar-btn" ? 1 : -1), 1));
             }
         };
 
@@ -363,6 +377,12 @@ window.addEventListener && (function(document, window) {
                 // remove legacy dateinput if it exists
                 el.type = "text";
                 el.className += " dateinput";
+                // update calendar on user input
+                el.addEventListener("input", function() {
+                    if (el.value) {
+                        calendarAPI.refresh(new Date(el.value));
+                    }
+                }, false);
             },
             showFor: function(el) {
                 var offset = calcOffset(currentEl = el);
@@ -371,7 +391,7 @@ window.addEventListener && (function(document, window) {
                     bodyEl.appendChild(calendarEl);
                 }
                 // switch calendar to appropriate month
-                this.refresh(currentDate = el.value ? new Date(el.value) : Date.now());
+                this.refresh(el.value ? new Date(el.value) : new Date());
 
                 calendarEl.style.left = offset.left + "px";
                 calendarEl.style.top = offset.bottom + "px";
@@ -383,31 +403,39 @@ window.addEventListener && (function(document, window) {
             },
             refresh: (function() {
                 var tableEl = calendarEl.firstChild,
+                    tableCaption = tableEl.querySelector("caption strong"),
                     tableCells = Array.prototype.splice.call(tableEl.querySelectorAll("td"), 0);
 
                 return function(date) {
                     var tableEl = calendarEl.firstChild,
                         iterDate = new Date(date.getFullYear(), date.getMonth(), 0);
-                    // move to begin of the start week
-                    iterDate.setDate(iterDate.getDate() - iterDate.getDay());
-                    // setup appropriate counter-reset property
-                    tableEl.style["counter-reset"] = "prev_counter " + iterDate.getDate() + " current_counter 0 next_counter 0";
-                    // update class names
-                    tableCells.forEach(function(cell) {
-                        // increment date
-                        iterDate.setDate(iterDate.getDate() + 1);
-                        // calc differences
-                        var mDiff = date.getMonth() - iterDate.getMonth(),
-                            dDiff = date.getDate() - iterDate.getDate();
+                    // update caption
+                    tableCaption.textContent = date.toDateString();
+                    // check if date is valid
+                    if (!isNaN(iterDate.getTime())) {
+                        // move to begin of the start week
+                        iterDate.setDate(iterDate.getDate() - iterDate.getDay());
+                        // setup appropriate counter-reset property
+                        tableEl.style["counter-reset"] = "prev_counter " + iterDate.getDate() + " current_counter 0 next_counter 0";
+                        // update class names
+                        tableCells.forEach(function(cell) {
+                            // increment date
+                            iterDate.setDate(iterDate.getDate() + 1);
+                            // calc differences
+                            var mDiff = date.getMonth() - iterDate.getMonth(),
+                                dDiff = date.getDate() - iterDate.getDate();
 
-                        if (date.getFullYear() != iterDate.getFullYear()) {
-                            mDiff *= -1;
-                        }
+                            if (date.getFullYear() != iterDate.getFullYear()) {
+                                mDiff *= -1;
+                            }
 
-                        cell.className = mDiff ?
-                            (mDiff > 0 ? "prev-calendar-item" : "next-calendar-item") :
-                            (dDiff ? "calendar-item" : "current-calendar-item");
-                    });
+                            cell.className = mDiff ?
+                                (mDiff > 0 ? "prev-calendar-item" : "next-calendar-item") :
+                                (dDiff ? "calendar-item" : "current-calendar-item");
+                        });
+                        // update current date
+                        currentDate = date;
+                    }
                 };
             })()
         };

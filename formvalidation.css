@@ -77,6 +77,52 @@
     position: absolute;
     border: 1px solid #CCC;
     background: white;
+
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+#formvalidationjs_calendar caption {
+    position: relative;
+    border: 1px solid #DDD;
+    padding: 0 3em;
+}
+
+#formvalidationjs_calendar strong {
+    font-size: 1.25em;
+    line-height: 2em;
+}
+
+.prev-calendar-btn,
+.next-calendar-btn {
+    position: absolute;
+    top: 0.5em;
+    background: #498CE2;
+    color: white;
+    text-decoration: none;
+
+    line-height: 1.5em;
+    width: 1.5em;
+
+    border-radius: 1em;
+}
+
+.prev-calendar-btn {
+    left: 0.5em;
+}
+
+.next-calendar-btn {
+    right: 0.5em;
+}
+
+.prev-calendar-btn:before {
+    content: "<"
+}
+
+.next-calendar-btn:before {
+    content: ">"
 }
 
 #formvalidationjs_calendar th,
@@ -106,7 +152,9 @@
     content: counter(current_counter);
 }
 
-#formvalidationjs_calendar [class*="calendar-item"]:hover {
+#formvalidationjs_calendar .calendar-item:hover,
+#formvalidationjs_calendar .prev-calendar-item:hover,
+#formvalidationjs_calendar .next-calendar-item:hover {
     background: #EEE;
 }
 
