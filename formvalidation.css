@@ -7,7 +7,6 @@
  *
  */
 #validity {
-    display: none;
     color: #FFF;
     text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
     background: #DA3E5A;
@@ -19,7 +18,7 @@
     box-shadow: 0 0 5px #AAA;
     
     position: absolute;
-    z-index: 9999;
+    z-index: 9998;
     cursor: default;
     
     -webkit-user-select: none;
@@ -42,10 +41,6 @@
     position: absolute;
     left: 10px;
     top: -10px;
-}
-
-#validity[class] {
-    display: inline-block;
 }
 
 #validity.value-missing:after {
@@ -82,6 +77,7 @@
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    z-index: 9999;
 
     box-shadow: 0 0 1em #CCC;
 }
@@ -182,83 +178,25 @@
 /* i18n */
 
 /* monthes */
-[data-i18n="calendar.month.NaN"]:before {
-    content: "Invalid date"
-}
-
-[data-i18n="calendar.month.0"]:before {
-    content: "January"
-}
-
-[data-i18n="calendar.month.1"]:before {
-    content: "February"
-}
-
-[data-i18n="calendar.month.2"]:before {
-    content: "March"
-}
-
-[data-i18n="calendar.month.3"]:before {
-    content: "April"
-}
-
-[data-i18n="calendar.month.4"]:before {
-    content: "May"
-}
-
-[data-i18n="calendar.month.5"]:before {
-    content: "June"
-}
-
-[data-i18n="calendar.month.6"]:before {
-    content: "July"
-}
-
-[data-i18n="calendar.month.7"]:before {
-    content: "April"
-}
-
-[data-i18n="calendar.month.8"]:before {
-    content: "September"
-}
-
-[data-i18n="calendar.month.9"]:before {
-    content: "October"
-}
-
-[data-i18n="calendar.month.10"]:before {
-    content: "November"
-}
-
-[data-i18n="calendar.month.11"]:before {
-    content: "December"
-}
+[data-i18n="calendar.month.NaN"]:before { content: "Invalid date" }
+[data-i18n="calendar.month.0"]:before { content: "January" }
+[data-i18n="calendar.month.1"]:before { content: "February" }
+[data-i18n="calendar.month.2"]:before { content: "March" }
+[data-i18n="calendar.month.3"]:before { content: "April" }
+[data-i18n="calendar.month.4"]:before { content: "May" }
+[data-i18n="calendar.month.5"]:before { content: "June" }
+[data-i18n="calendar.month.6"]:before { content: "July" }
+[data-i18n="calendar.month.7"]:before { content: "April" }
+[data-i18n="calendar.month.8"]:before { content: "September" }
+[data-i18n="calendar.month.9"]:before { content: "October" }
+[data-i18n="calendar.month.10"]:before { content: "November" }
+[data-i18n="calendar.month.11"]:before { content: "December" }
 
 /* days of week */
-[data-i18n="calendar.weekday.0"]:before {
-    content: "Mon"
-}
-
-[data-i18n="calendar.weekday.1"]:before {
-    content: "Tue"
-}
-
-[data-i18n="calendar.weekday.2"]:before {
-    content: "Wed"
-}
-
-[data-i18n="calendar.weekday.3"]:before {
-    content: "Thu"
-}
-
-[data-i18n="calendar.weekday.4"]:before {
-    content: "Fri"
-}
-
-[data-i18n="calendar.weekday.5"]:before {
-    content: "Sat"
-}
-
-[data-i18n="calendar.weekday.6"]:before {
-    content: "Sun"
-}
+[data-i18n="calendar.weekday.0"]:before { content: "Mon" }
+[data-i18n="calendar.weekday.1"]:before { content: "Tue" }
+[data-i18n="calendar.weekday.2"]:before { content: "Wed" }
+[data-i18n="calendar.weekday.3"]:before { content: "Thu" }
+[data-i18n="calendar.weekday.4"]:before { content: "Fri" }
+[data-i18n="calendar.weekday.5"]:before { content: "Sat" }
+[data-i18n="calendar.weekday.6"]:before { content: "Sun" }

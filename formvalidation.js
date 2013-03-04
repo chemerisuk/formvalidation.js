@@ -7,6 +7,59 @@
  *
  */
 window.addEventListener && (function(document, window) {
+    // helper type
+    function TooltipAPI(options, overrides) {
+        var el = document.createElement("div");
+
+        Object.keys(options || {}).forEach(function(key) {
+            el[key] = options[key];
+        });
+
+        el.onmousedown = function(e) {
+            // fix problems with loosing focus when click on tooltip
+            e.preventDefault();
+            e.stopPropagation();
+        };
+
+        this._el = el;
+
+        Object.keys(overrides || {}).forEach(function(key) {
+            this[key] = overrides[key];
+        }, this);
+
+        this.hide();
+    }
+
+    TooltipAPI.prototype = {
+        capture: function(el) {
+            return !!(this._target = el);
+        },
+        show: function() {
+            if (this._target) {
+                var boundingRect = this._target.getBoundingClientRect(),
+                    clientTop = htmlEl.clientTop || bodyEl.clientTop || 0,
+                    clientLeft = htmlEl.clientLeft || bodyEl.clientLeft || 0,
+                    scrollTop = window.pageYOffset || htmlEl.scrollTop || bodyEl.scrollTop,
+                    scrollLeft = window.pageXOffset || htmlEl.scrollLeft || bodyEl.scrollLeft;
+
+                if (this._el.parentNode === null) {
+                    bodyEl.appendChild(this._el);
+                }
+
+                this._el.style.left = boundingRect.left + scrollLeft - clientLeft + "px";
+                this._el.style.top = boundingRect.bottom + scrollTop - clientTop + "px";
+
+                this._el.removeAttribute("hidden");
+            }
+        },
+        hide: function() {
+            if (this._target !== null) {
+                this._target = null;
+                this._el.setAttribute("hidden", "");
+            }
+        }
+    };
+
     var bodyEl = document.body,
         headEl = document.head,
         htmlEl = document.documentElement,
@@ -66,20 +119,6 @@ window.addEventListener && (function(document, window) {
                 });
             };
         })(),
-        calcOffset = function(el) {
-            var boundingRect = el.getBoundingClientRect(),
-                clientTop = htmlEl.clientTop || bodyEl.clientTop || 0,
-                clientLeft = htmlEl.clientLeft || bodyEl.clientLeft || 0,
-                scrollTop = window.pageYOffset || htmlEl.scrollTop || bodyEl.scrollTop,
-                scrollLeft = window.pageXOffset || htmlEl.scrollLeft || bodyEl.scrollLeft;
-
-            return {
-                top: boundingRect.top + scrollTop - clientTop,
-                left: boundingRect.left + scrollLeft - clientLeft,
-                right: boundingRect.right + scrollLeft - clientLeft,
-                bottom: boundingRect.bottom + scrollTop - clientTop
-            };
-        },
         none = function(form, test) {
             var inputs = Array.prototype.slice.call(form.elements, 0);
 
@@ -90,75 +129,64 @@ window.addEventListener && (function(document, window) {
             }
 
             return true;
+        };
+
+    var validityAPI = new TooltipAPI({ id: "validity" }, {
+        capture: function(el) {
+            if (this._target === el) {
+                this.refresh();
+            }
+
+            return !this._target && TooltipAPI.prototype.capture.call(this, el);
         },
-        tooltipApi = (function() {
-            var validityEl = bodyEl.appendChild(document.createElement("div")),
-                invalidInput = null,
-                buildErrorClass = (function() {
-                    var rUpperCase = /[A-Z]/g,
-                        camelCaseToDashSeparated = function(l) {
-                            return "-" + l.toLowerCase();
-                        };
+        show: function() {
+            this.refresh();
 
-                    return function(errorType, input) {
-                        var inputType = input.getAttribute("type");
+            TooltipAPI.prototype.show.call(this);
+        },
+        refresh: function() {
+            var validity = this._target.validity,
+                classesArray = [],
+                errorMessage;
 
-                        if (errorType === "typeMismatch" && inputType) {
-                            // special case for email-mismatch, url-mismatch etc.
-                            return inputType.toLowerCase() + "-mismatch";
-                        } else {
-                            // convert camel case to dash separated
-                            return errorType.replace(rUpperCase, camelCaseToDashSeparated);
-                        }
-                    };
-                })();
+            Object.keys(validity).forEach(function(errorType) {
+                validity[errorType] && classesArray.push(this.getErrorClass(errorType));
+            }, this);
             
-            validityEl.id = "validity";
+            if (validity.patternMismatch) {
+                // if pattern check fails use title to get error message
+                errorMessage = this._target.title;
+            }
             
-            return {
-                show: function(input, force) {
-                    if ((force || !invalidInput || invalidInput === input) && !input.validity.valid) {
-                        var // validity vars
-                            validity = input.validity,
-                            classesArray = [],
-                            errorMessage,
-                            offset = calcOffset(input);
-                        
-                        for (var errorType in validity) {
-                            if (validity[errorType]) {
-                                classesArray.push(buildErrorClass(errorType, input));
-                            }
-                        }
-                        
-                        if (validity.patternMismatch) {
-                            // if pattern check fails use title to get error message
-                            errorMessage = input.title;
-                        }
-                        
-                        if (validity.customError) {
-                            errorMessage = input.validationMessage;
-                        }
-                        
-                        validityEl.textContent = errorMessage || "";
-                        validityEl.className = classesArray.join(" ");
-                        validityEl.style.top = offset.bottom + "px";
-                        validityEl.style.left = offset.left + "px";
-                        
-                        invalidInput = input;
-                    }
-                },
-                hide: function(input, force) {
-                    if (force || !invalidInput || invalidInput === input) {
-                        validityEl.removeAttribute("class");
-                        
-                        invalidInput = null;
-                    }
-                },
-                getForm: function() {
-                    return invalidInput ? invalidInput.form : null;
+            if (validity.customError) {
+                errorMessage = this._target.validationMessage;
+            }
+
+            this._el.textContent = errorMessage || "";
+            this._el.className = classesArray.join(" ");
+        },
+        getErrorClass: (function() {
+            var rUpperCase = /[A-Z]/g,
+                camelCaseToDashSeparated = function(l) {
+                    return "-" + l.toLowerCase();
+                };
+
+            return function(errorType) {
+                var inputType = this._target.getAttribute("type");
+
+                if (errorType === "typeMismatch" && inputType) {
+                    // special case for email-mismatch, url-mismatch etc.
+                    return inputType.toLowerCase() + "-mismatch";
+                } else {
+                    // convert camel case to dash separated
+                    return errorType.replace(rUpperCase, camelCaseToDashSeparated);
                 }
             };
-        })();
+        })(),
+        getForm: function() {
+            return this._target ? this._target.form : null;
+        }
+    });
     
     if (!("validity" in document.createElement("input"))) {
         var rNumber = /^-?[0-9]*(\.[0-9]+)?$/,
@@ -269,7 +297,10 @@ window.addEventListener && (function(document, window) {
     }
     
     bindCapturingEvent("invalid", function(e) {
-        tooltipApi.show(e.target, false);
+        if (validityAPI.capture(e.target)) {
+            validityAPI.show();
+        }
+        //validityAPI.show(e.target, false);
         // don't show native tooltip
         e.preventDefault();
     });
@@ -278,7 +309,7 @@ window.addEventListener && (function(document, window) {
         var target = e.target;
 
         if (target.checkValidity()) {
-            tooltipApi.hide(target, false);
+            validityAPI.hide();
         }
     });
     
@@ -286,20 +317,20 @@ window.addEventListener && (function(document, window) {
         var target = e.target;
         // polyfill textarea maxlength attribute
         if (target.type === "textarea") {
-            var maxlength = parseInt(target.getAttribute("maxlength"), 10);
+            if (target.maxlength === undefined) {
+                target.maxlength = parseInt(target.getAttribute("maxlength"), 10);
+            }
             
-            if (maxlength) {
-                target.value = target.value.substr(0, maxlength);
+            if (target.maxlength) {
+                target.value = target.value.substr(0, target.maxlength);
             }
         }
-        // hide tooltip on user input
-        tooltipApi.hide(target, true);
     });
     
     bindCapturingEvent("submit", function(e) {
         // validate all elements on a form submit
         if (e.target.checkValidity()) {
-            tooltipApi.hide(null, true);
+            validityAPI.hide();
         } else {
             // prevent form submition because of errors
             e.preventDefault();
@@ -308,69 +339,15 @@ window.addEventListener && (function(document, window) {
     
     bindEvent("reset", function(e) {
         // hide tooltip when user resets the form
-        tooltipApi.hide(null, true);
+        validityAPI.hide();
     });
     
     bindCapturingEvent("click", function(e) {
         // hide tooltip when user goes to other part of page
-        if (e.target.form !== tooltipApi.getForm()) {
-            tooltipApi.hide(null, true);
+        if (e.target.form !== validityAPI.getForm()) {
+            validityAPI.hide();
         }
     });
-
-    // calendar support
-
-    var TooltipAPI = function(options, overrides) {
-        var el = document.createElement("div");
-
-        Object.keys(options || {}).forEach(function(key) {
-            el[key] = options[key];
-        });
-
-        el.onmousedown = function(e) {
-            // fix problems with loosing focus when click on tooltip
-            e.preventDefault();
-            e.stopPropagation();
-        };
-
-        this._el = el;
-
-        Object.keys(overrides || {}).forEach(function(key) {
-            this[key] = overrides[key];
-        }, this);
-
-        this.hide();
-    };
-
-    TooltipAPI.prototype = {
-        capture: function(el) {
-            return !! (this._target = el);
-        },
-        show: function() {
-            if (this._target) {
-                var boundingRect = this._target.getBoundingClientRect(),
-                    clientTop = htmlEl.clientTop || bodyEl.clientTop || 0,
-                    clientLeft = htmlEl.clientLeft || bodyEl.clientLeft || 0,
-                    scrollTop = window.pageYOffset || htmlEl.scrollTop || bodyEl.scrollTop,
-                    scrollLeft = window.pageXOffset || htmlEl.scrollLeft || bodyEl.scrollLeft;
-
-                if (this._el.parentNode === null) {
-                    bodyEl.appendChild(this._el);
-                }
-
-                this._el.style.left = boundingRect.left + scrollLeft - clientLeft + "px";
-                this._el.style.top = boundingRect.bottom + scrollTop - clientTop + "px";
-
-                this._el.removeAttribute("hidden");
-            }
-        },
-        hide: function() {
-            if (this._target !== null) {
-                this._target = null;
-                this._el.setAttribute("hidden", "");
-            }
-        }
-    };
 
     // calendar api
 
