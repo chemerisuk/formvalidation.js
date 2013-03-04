@@ -377,14 +377,13 @@ window.addEventListener && (function(document, window) {
     var calendarAPI = new TooltipAPI({
         id: "formvalidationjs_calendar",
         innerHTML: (function() {
-            var content = "<p class='calendar-header'></p><a class='prev-calendar-btn'></a><a class='next-calendar-btn'></a><div class='calendar-days'>";
+            var content = "<p class='formvalidation-calendar-header'></p><a class='formvalidation-calendar-prev'></a><a class='formvalidation-calendar-next'></a><div class='formvalidation-calendar-days'>";
 
             for (var i = 0; i < 7; ++i) {
-                content += "<ol class='calendar-row'>";
+                content += "<ol class='formvalidation-calendar-row'>";
 
                 for (var j = 0; j < 7; ++j) {
-                    content += i ? "<li class='calendar-day' data-index='" + (j + 7 * (i - 1)) + "'>":
-                        "<li class='calendar-week-day' data-i18n='calendar.weekday." + j + "'>"; 
+                    content += (i ? "<li data-index='" + (j + 7 * (i - 1)) : "<li data-i18n='calendar.weekday." + j) + "'>"; 
                 }
 
                 content += "</ol>";
@@ -412,9 +411,10 @@ window.addEventListener && (function(document, window) {
                     // trigger blur manually to hide calendar control
                     calendarAPI._target.blur();
                 }
-            } else if (~target.className.indexOf("calendar-btn")) {
-                calendarAPI.refresh(new Date(currentYear,
-                    currentMonth + (target.className === "next-calendar-btn" ? 1 : -1), 1));
+            } else if (~target.className.lastIndexOf("prev")) {
+                calendarAPI.refresh(new Date(currentYear, currentMonth - 1, 1));
+            } else if (~target.className.lastIndexOf("next")) {
+                calendarAPI.refresh(new Date(currentYear, currentMonth + 1, 1));
             }
         }
     }, {
@@ -445,14 +445,14 @@ window.addEventListener && (function(document, window) {
             return TooltipAPI.prototype.show.call(this);
         },
         refresh: function(date) {
-            var tableEl = this._el.querySelector(".calendar-days"),
-                tableCaption = this._el.querySelector(".calendar-header"),
-                tableCells = Array.prototype.splice.call(tableEl.querySelectorAll(".calendar-day"), 0);
+            var tableEl = this._el.querySelector(".formvalidation-calendar-days"),
+                tableHeader = this._el.querySelector(".formvalidation-calendar-header"),
+                tableCells = Array.prototype.splice.call(tableEl.querySelectorAll("[data-index]"), 0);
 
             this.refresh = function(date) {
                 var iterDate = new Date(date.getFullYear(), date.getMonth(), 0);
                 // update caption
-                tableCaption.textContent = date.toDateString();
+                tableHeader.innerHTML = "<span data-i18n='calendar.month." + date.getMonth() + "'></span> " + (isNaN(date.getFullYear()) ? "" : date.getFullYear());
                 // check if date is valid
                 if (!isNaN(iterDate.getTime())) {
                     // move to begin of the start week

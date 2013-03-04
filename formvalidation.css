@@ -86,15 +86,15 @@
     box-shadow: 0 0 1em #CCC;
 }
 
-#formvalidationjs_calendar .calendar-header {
+.formvalidation-calendar-header {
     font-size: 1.25em;
     line-height: 2em;
     margin: 0 2em;
     text-align: center;
 }
 
-.prev-calendar-btn,
-.next-calendar-btn {
+.formvalidation-calendar-prev,
+.formvalidation-calendar-next {
     position: absolute;
     top: 0.5em;
     background: #498CE2;
@@ -107,40 +107,34 @@
     border-radius: 1em;
 }
 
-.prev-calendar-btn {
+.formvalidation-calendar-prev {
     left: 0.5em;
 }
 
-.next-calendar-btn {
-    right: 0.5em;
-}
-
-.prev-calendar-btn:before {
+.formvalidation-calendar-prev:before {
     content: "<"
 }
 
-.next-calendar-btn:before {
+.formvalidation-calendar-next {
+    right: 0.5em;
+}
+
+.formvalidation-calendar-next:before {
     content: ">"
 }
 
-#formvalidationjs_calendar .calendar-days {
+.formvalidation-calendar-days {
     display: table;
     table-layout: fixed;
     border-spacing: 0;
 }
 
-#formvalidationjs_calendar .calendar-row {
+.formvalidation-calendar-row {
     display: table-row;
     list-style: none;
 }
 
-#formvalidationjs_calendar .calendar-week-day {
-    font-weight: bold;
-    background: #DDD;
-}
-
-#formvalidationjs_calendar .calendar-week-day,
-#formvalidationjs_calendar [data-index] {
+.formvalidation-calendar-row > li {
     width: 3em;
     height: 2em;
     border: 1px solid #DDD;
@@ -150,37 +144,97 @@
     display: table-cell;
 }
 
-#formvalidationjs_calendar .calendar-day:before,
-#formvalidationjs_calendar .current-calendar-day:before {
+.formvalidation-calendar-row:first-child > li {
+    font-weight: bold;
+    background: #DDD;
+}
+
+.formvalidation-calendar-days .calendar-day:before,
+.formvalidation-calendar-days .current-calendar-day:before {
     content: counter(current_counter);
     counter-increment: current_counter;
 }
 
-#formvalidationjs_calendar .prev-calendar-day:before {
-    content: counter(prev_counter);
-    counter-increment: prev_counter;
-}
-
-#formvalidationjs_calendar .next-calendar-day:before {
-    content: counter(next_counter);
-    counter-increment: next_counter;
-}
-
-#formvalidationjs_calendar [data-index]:hover {
+.formvalidation-calendar-days [data-index]:hover {
     background: #EEE;
 }
 
-#formvalidationjs_calendar .current-calendar-day {
+.formvalidation-calendar-days .current-calendar-day {
     background: #498CE2;
     color: #FFF;
 }
 
-#formvalidationjs_calendar .prev-calendar-day,
-#formvalidationjs_calendar .next-calendar-day {
+.formvalidation-calendar-days .prev-calendar-day:before {
+    content: counter(prev_counter);
+    counter-increment: prev_counter;
+}
+
+.formvalidation-calendar-days .next-calendar-day:before {
+    content: counter(next_counter);
+    counter-increment: next_counter;
+}
+
+.formvalidation-calendar-days .prev-calendar-day,
+.formvalidation-calendar-days .next-calendar-day {
     color: #AAA;
 }
 
 /* i18n */
+
+/* monthes */
+[data-i18n="calendar.month.NaN"]:before {
+    content: "Invalid date"
+}
+
+[data-i18n="calendar.month.0"]:before {
+    content: "January"
+}
+
+[data-i18n="calendar.month.1"]:before {
+    content: "February"
+}
+
+[data-i18n="calendar.month.2"]:before {
+    content: "March"
+}
+
+[data-i18n="calendar.month.3"]:before {
+    content: "April"
+}
+
+[data-i18n="calendar.month.4"]:before {
+    content: "May"
+}
+
+[data-i18n="calendar.month.5"]:before {
+    content: "June"
+}
+
+[data-i18n="calendar.month.6"]:before {
+    content: "July"
+}
+
+[data-i18n="calendar.month.7"]:before {
+    content: "April"
+}
+
+[data-i18n="calendar.month.8"]:before {
+    content: "September"
+}
+
+[data-i18n="calendar.month.9"]:before {
+    content: "October"
+}
+
+[data-i18n="calendar.month.10"]:before {
+    content: "November"
+}
+
+[data-i18n="calendar.month.11"]:before {
+    content: "December"
+}
+
+/* days of week */
 [data-i18n="calendar.weekday.0"]:before {
     content: "Mon"
 }
