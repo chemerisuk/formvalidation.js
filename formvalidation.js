@@ -377,30 +377,36 @@ window.addEventListener && (function(document, window) {
     var calendarAPI = new TooltipAPI({
         id: "formvalidationjs_calendar",
         innerHTML: (function() {
-            var content = "<table><caption><a class='prev-calendar-btn'></a><strong></strong><a class='next-calendar-btn'></a></caption><tbody>";
+            var content = "<p class='calendar-header'></p><a class='prev-calendar-btn'></a><a class='next-calendar-btn'></a><div class='calendar-days'>";
 
             for (var i = 0; i < 7; ++i) {
-                content += "<tr>";
-                content += i ? "<td><td><td><td><td><td><td>" : "<th><th><th><th><th><th><th>";
-                content += "</tr>";
+                content += "<ol class='calendar-row'>";
+
+                for (var j = 0; j < 7; ++j) {
+                    content += i ? "<li class='calendar-day' data-index='" + (j + 7 * (i - 1)) + "'>":
+                        "<li class='calendar-week-day' data-i18n='calendar.weekday." + j + "'>"; 
+                }
+
+                content += "</ol>";
             }
 
-            return content + "</tbody></table>";
+            return content;
         })(),
         onclick: function(e) {
             var target = e.target,
                 currentYear = calendarAPI._currentDate.getFullYear(),
                 currentMonth = calendarAPI._currentDate.getMonth(),
+                currentDate = calendarAPI._currentDate.getDate(),
                 targetDate;
 
-            if (~target.className.indexOf("calendar-item")) {
+            if (target.hasAttribute("data-index")) {
                 targetDate = new Date(currentYear, currentMonth,
-                    target.cellIndex + 3 + (target.parentNode.rowIndex - 1) * 7 -
+                    parseInt(target.getAttribute("data-index"), 10) + 3 -
                         new Date(currentYear, currentMonth, 1).getDay());
 
                 if (targetDate.getFullYear() !== currentYear ||
                     targetDate.getMonth() !== currentMonth ||
-                    targetDate.getDate() !== calendarAPI._currentDate.getDate()) {
+                    targetDate.getDate() !== currentDate) {
                     // update input value
                     calendarAPI._target.value = targetDate.toISOString().split("T")[0];
                     // trigger blur manually to hide calendar control
@@ -439,9 +445,9 @@ window.addEventListener && (function(document, window) {
             return TooltipAPI.prototype.show.call(this);
         },
         refresh: function(date) {
-            var tableEl = this._el.firstChild,
-                tableCaption = tableEl.querySelector("caption strong"),
-                tableCells = Array.prototype.splice.call(tableEl.querySelectorAll("td"), 0);
+            var tableEl = this._el.querySelector(".calendar-days"),
+                tableCaption = this._el.querySelector(".calendar-header"),
+                tableCells = Array.prototype.splice.call(tableEl.querySelectorAll(".calendar-day"), 0);
 
             this.refresh = function(date) {
                 var iterDate = new Date(date.getFullYear(), date.getMonth(), 0);
@@ -466,8 +472,8 @@ window.addEventListener && (function(document, window) {
                         }
 
                         cell.className = mDiff ?
-                            (mDiff > 0 ? "prev-calendar-item" : "next-calendar-item") :
-                            (dDiff ? "calendar-item" : "current-calendar-item");
+                            (mDiff > 0 ? "prev-calendar-day" : "next-calendar-day") :
+                            (dDiff ? "calendar-day" : "current-calendar-day");
                     });
                     // update current date
                     this._currentDate = date;

@@ -86,15 +86,11 @@
     box-shadow: 0 0 1em #CCC;
 }
 
-#formvalidationjs_calendar caption {
-    position: relative;
-    border: 1px solid #DDD;
-    padding: 0 3em;
-}
-
-#formvalidationjs_calendar strong {
+#formvalidationjs_calendar .calendar-header {
     font-size: 1.25em;
     line-height: 2em;
+    margin: 0 2em;
+    text-align: center;
 }
 
 .prev-calendar-btn,
@@ -104,7 +100,7 @@
     background: #498CE2;
     color: white;
     text-decoration: none;
-
+    text-align: center;
     line-height: 1.5em;
     width: 1.5em;
 
@@ -127,89 +123,88 @@
     content: ">"
 }
 
-#formvalidationjs_calendar th,
-#formvalidationjs_calendar td {
+#formvalidationjs_calendar .calendar-days {
+    display: table;
+    table-layout: fixed;
+    border-spacing: 0;
+}
+
+#formvalidationjs_calendar .calendar-row {
+    display: table-row;
+    list-style: none;
+}
+
+#formvalidationjs_calendar .calendar-week-day {
+    font-weight: bold;
+    background: #DDD;
+}
+
+#formvalidationjs_calendar .calendar-week-day,
+#formvalidationjs_calendar [data-index] {
     width: 3em;
     height: 2em;
     border: 1px solid #DDD;
     text-indent: 0.5em;
     vertical-align: middle;
     text-align: left;
+    display: table-cell;
 }
 
-#formvalidationjs_calendar th {
-    font-weight: bold;
-}
-
-#formvalidationjs_calendar table {
-    table-layout: fixed;
-    border-spacing: 0;
-}
-
-#formvalidationjs_calendar td {
+#formvalidationjs_calendar .calendar-day:before,
+#formvalidationjs_calendar .current-calendar-day:before {
+    content: counter(current_counter);
     counter-increment: current_counter;
 }
 
-#formvalidationjs_calendar td:before {
-    content: counter(current_counter);
+#formvalidationjs_calendar .prev-calendar-day:before {
+    content: counter(prev_counter);
+    counter-increment: prev_counter;
 }
 
-#formvalidationjs_calendar .calendar-item:hover,
-#formvalidationjs_calendar .prev-calendar-item:hover,
-#formvalidationjs_calendar .next-calendar-item:hover {
+#formvalidationjs_calendar .next-calendar-day:before {
+    content: counter(next_counter);
+    counter-increment: next_counter;
+}
+
+#formvalidationjs_calendar [data-index]:hover {
     background: #EEE;
 }
 
-#formvalidationjs_calendar .current-calendar-item {
+#formvalidationjs_calendar .current-calendar-day {
     background: #498CE2;
     color: #FFF;
 }
 
-#formvalidationjs_calendar .prev-calendar-item,
-#formvalidationjs_calendar .next-calendar-item {
+#formvalidationjs_calendar .prev-calendar-day,
+#formvalidationjs_calendar .next-calendar-day {
     color: #AAA;
 }
 
-#formvalidationjs_calendar .prev-calendar-item {
-    counter-increment: prev_counter;
-}
-
-#formvalidationjs_calendar .prev-calendar-item:before {
-    content: counter(prev_counter);
-}
-
-#formvalidationjs_calendar .next-calendar-item {
-    counter-increment: next_counter;
-}
-
-#formvalidationjs_calendar .next-calendar-item:before {
-    content: counter(next_counter);
-}
-
-#formvalidationjs_calendar th:nth-child(1):before {
+/* i18n */
+[data-i18n="calendar.weekday.0"]:before {
     content: "Mon"
 }
 
-#formvalidationjs_calendar th:nth-child(2):before {
+[data-i18n="calendar.weekday.1"]:before {
     content: "Tue"
 }
 
-#formvalidationjs_calendar th:nth-child(3):before {
+[data-i18n="calendar.weekday.2"]:before {
     content: "Wed"
 }
 
-#formvalidationjs_calendar th:nth-child(4):before {
+[data-i18n="calendar.weekday.3"]:before {
     content: "Thu"
 }
 
-#formvalidationjs_calendar th:nth-child(5):before {
+[data-i18n="calendar.weekday.4"]:before {
     content: "Fri"
 }
 
-#formvalidationjs_calendar th:nth-child(6):before {
+[data-i18n="calendar.weekday.5"]:before {
     content: "Sat"
 }
 
-#formvalidationjs_calendar th:nth-child(7):before {
+[data-i18n="calendar.weekday.6"]:before {
     content: "Sun"
 }
