@@ -1,0 +1,7 @@
+{
+    "browser": true,     
+    "indent": 4,        
+    "quotmark": "double",
+    "eqeqeq": true,
+    "expr": true
+}

@@ -285,7 +285,7 @@ window.addEventListener && (function(document, window) {
     bindEvent("input", function(e) {
         var target = e.target;
         // polyfill textarea maxlength attribute
-        if (target.type == "textarea") {
+        if (target.type === "textarea") {
             var maxlength = parseInt(target.getAttribute("maxlength"), 10);
             
             if (maxlength) {
@@ -320,12 +320,63 @@ window.addEventListener && (function(document, window) {
 
     // calendar support
 
-    var calendarAPI = (function() {
-        var calendarEl = document.createElement("div"),
-            currentEl, currentDate;
-        
-        calendarEl.id = "formvalidationjs_calendar";
-        calendarEl.innerHTML = (function() {
+    var TooltipAPI = function(options, overrides) {
+        var el = document.createElement("div");
+
+        Object.keys(options || {}).forEach(function(key) {
+            el[key] = options[key];
+        });
+
+        el.onmousedown = function(e) {
+            // fix problems with loosing focus when click on tooltip
+            e.preventDefault();
+            e.stopPropagation();
+        };
+
+        this._el = el;
+
+        Object.keys(overrides || {}).forEach(function(key) {
+            this[key] = overrides[key];
+        }, this);
+
+        this.hide();
+    };
+
+    TooltipAPI.prototype = {
+        capture: function(el) {
+            return !! (this._target = el);
+        },
+        show: function() {
+            if (this._target) {
+                var boundingRect = this._target.getBoundingClientRect(),
+                    clientTop = htmlEl.clientTop || bodyEl.clientTop || 0,
+                    clientLeft = htmlEl.clientLeft || bodyEl.clientLeft || 0,
+                    scrollTop = window.pageYOffset || htmlEl.scrollTop || bodyEl.scrollTop,
+                    scrollLeft = window.pageXOffset || htmlEl.scrollLeft || bodyEl.scrollLeft;
+
+                if (this._el.parentNode === null) {
+                    bodyEl.appendChild(this._el);
+                }
+
+                this._el.style.left = boundingRect.left + scrollLeft - clientLeft + "px";
+                this._el.style.top = boundingRect.bottom + scrollTop - clientTop + "px";
+
+                this._el.removeAttribute("hidden");
+            }
+        },
+        hide: function() {
+            if (this._target !== null) {
+                this._target = null;
+                this._el.setAttribute("hidden", "");
+            }
+        }
+    };
+
+    // calendar api
+
+    var calendarAPI = new TooltipAPI({
+        id: "formvalidationjs_calendar",
+        innerHTML: (function() {
             var content = "<table><caption><a class='prev-calendar-btn'></a><strong></strong><a class='next-calendar-btn'></a></caption><tbody>";
 
             for (var i = 0; i < 7; ++i) {
@@ -334,129 +385,103 @@ window.addEventListener && (function(document, window) {
                 content += "</tr>";
             }
 
-            content += "</tbody></table>";
-
-            return content;
-        })();
-
-        calendarEl.setAttribute("hidden", "");
-
-        calendarEl.onmousedown = function(e) {
-            // fix problems with loosing focus when click on calendar
-            e.preventDefault();
-            e.stopPropagation();
-        };
-
-        calendarEl.onclick = function(e) {
+            return content + "</tbody></table>";
+        })(),
+        onclick: function(e) {
             var target = e.target,
-                parent = target.parentNode,
-                currentYear = currentDate.getFullYear(),
-                currentMonth = currentDate.getMonth(),
+                currentYear = calendarAPI._currentDate.getFullYear(),
+                currentMonth = calendarAPI._currentDate.getMonth(),
                 targetDate;
 
             if (~target.className.indexOf("calendar-item")) {
                 targetDate = new Date(currentYear, currentMonth,
-                    target.cellIndex + 3 + (parent.rowIndex - 1) * 7 -
+                    target.cellIndex + 3 + (target.parentNode.rowIndex - 1) * 7 -
                         new Date(currentYear, currentMonth, 1).getDay());
 
-                if (targetDate.getFullYear() != currentYear ||
-                    targetDate.getMonth() != currentMonth ||
-                    targetDate.getDate() != currentDate.getDate()) {
+                if (targetDate.getFullYear() !== currentYear ||
+                    targetDate.getMonth() !== currentMonth ||
+                    targetDate.getDate() !== calendarAPI._currentDate.getDate()) {
                     // update input value
-                    currentEl.value = targetDate.toISOString().split("T")[0];
+                    calendarAPI._target.value = targetDate.toISOString().split("T")[0];
                     // trigger blur manually to hide calendar control
-                    currentEl.blur();
+                    calendarAPI._target.blur();
                 }
             } else if (~target.className.indexOf("calendar-btn")) {
                 calendarAPI.refresh(new Date(currentYear,
                     currentMonth + (target.className === "next-calendar-btn" ? 1 : -1), 1));
             }
-        };
-
-        return {
-            capture: function(el) {
-                if (el.nodeName === "INPUT") {
-                    // init calendar for browsers that don't support listenSelector
-                    if (el.getAttribute("type") === "date") {
-                        // remove legacy dateinput if it exists
-                        el.type = "text";
-                        el.className += " dateinput";
-                        // update calendar when user types
-                        el.addEventListener("input", function() {
-                            if (el.value) {
-                                calendarAPI.refresh(new Date(el.value));
-                            }
-                        }, false);
-                    }
-
-                    if (~el.className.indexOf("dateinput")) {
-                        currentEl = el;
-
-                        return true;
-                    }
+        }
+    }, {
+        capture: function(el) {
+            if (el.nodeName === "INPUT") {
+                // init calendar for browsers that don't support listenSelector
+                if (el.getAttribute("type") === "date") {
+                    // remove legacy dateinput if it exists
+                    el.type = "text";
+                    el.className += " dateinput";
+                    // update calendar when user types
+                    el.addEventListener("input", this, false);
                 }
 
-                return false;
-            },
-            show: function() {
-                var offset = calcOffset(currentEl);
-
-                if (calendarEl.parentNode === null) {
-                    bodyEl.appendChild(calendarEl);
+                if (~el.className.indexOf("dateinput")) {
+                    // call prototype's method
+                    return TooltipAPI.prototype.capture.call(this, el);
                 }
-                // switch calendar to appropriate month
-                this.refresh(currentEl.value ? new Date(currentEl.value) : new Date());
+            }
 
-                calendarEl.style.left = offset.left + "px";
-                calendarEl.style.top = offset.bottom + "px";
+            return false;
+        },
+        show: function() {
+            var inputValue = this._target.value;
+            // switch calendar to appropriate month
+            this.refresh(inputValue ? new Date(inputValue) : new Date());
+            // call prototype's method
+            return TooltipAPI.prototype.show.call(this);
+        },
+        refresh: function(date) {
+            var tableEl = this._el.firstChild,
+                tableCaption = tableEl.querySelector("caption strong"),
+                tableCells = Array.prototype.splice.call(tableEl.querySelectorAll("td"), 0);
 
-                calendarEl.removeAttribute("hidden");
-            },
-            hide: function() {
-                if (currentEl) {
-                    calendarEl.setAttribute("hidden", "");
-                    currentEl = null;
+            this.refresh = function(date) {
+                var iterDate = new Date(date.getFullYear(), date.getMonth(), 0);
+                // update caption
+                tableCaption.textContent = date.toDateString();
+                // check if date is valid
+                if (!isNaN(iterDate.getTime())) {
+                    // move to begin of the start week
+                    iterDate.setDate(iterDate.getDate() - iterDate.getDay());
+                    // setup appropriate counter-reset property
+                    tableEl.style["counter-reset"] = "prev_counter " + iterDate.getDate() + " current_counter 0 next_counter 0";
+                    // update class names
+                    tableCells.forEach(function(cell) {
+                        // increment date
+                        iterDate.setDate(iterDate.getDate() + 1);
+                        // calc differences
+                        var mDiff = date.getMonth() - iterDate.getMonth(),
+                            dDiff = date.getDate() - iterDate.getDate();
+
+                        if (date.getFullYear() !== iterDate.getFullYear()) {
+                            mDiff *= -1;
+                        }
+
+                        cell.className = mDiff ?
+                            (mDiff > 0 ? "prev-calendar-item" : "next-calendar-item") :
+                            (dDiff ? "calendar-item" : "current-calendar-item");
+                    });
+                    // update current date
+                    this._currentDate = date;
                 }
-            },
-            refresh: (function() {
-                var tableEl = calendarEl.firstChild,
-                    tableCaption = tableEl.querySelector("caption strong"),
-                    tableCells = Array.prototype.splice.call(tableEl.querySelectorAll("td"), 0);
+            };
 
-                return function(date) {
-                    var tableEl = calendarEl.firstChild,
-                        iterDate = new Date(date.getFullYear(), date.getMonth(), 0);
-                    // update caption
-                    tableCaption.textContent = date.toDateString();
-                    // check if date is valid
-                    if (!isNaN(iterDate.getTime())) {
-                        // move to begin of the start week
-                        iterDate.setDate(iterDate.getDate() - iterDate.getDay());
-                        // setup appropriate counter-reset property
-                        tableEl.style["counter-reset"] = "prev_counter " + iterDate.getDate() + " current_counter 0 next_counter 0";
-                        // update class names
-                        tableCells.forEach(function(cell) {
-                            // increment date
-                            iterDate.setDate(iterDate.getDate() + 1);
-                            // calc differences
-                            var mDiff = date.getMonth() - iterDate.getMonth(),
-                                dDiff = date.getDate() - iterDate.getDate();
+            this.refresh(date);
+        },
+        handleEvent: function(e) {
+            var inputValue = e.target.value;
 
-                            if (date.getFullYear() != iterDate.getFullYear()) {
-                                mDiff *= -1;
-                            }
-
-                            cell.className = mDiff ?
-                                (mDiff > 0 ? "prev-calendar-item" : "next-calendar-item") :
-                                (dDiff ? "calendar-item" : "current-calendar-item");
-                        });
-                        // update current date
-                        currentDate = date;
-                    }
-                };
-            })()
-        };
-    })();
+            inputValue && this.refresh(new Date(inputValue));
+        }
+    });
 
     listenSelector("input[type='date']", function(e) {
         // init calendar for browsers that support listenSelector
@@ -464,9 +489,7 @@ window.addEventListener && (function(document, window) {
     });
 
     bindCapturingEvent("focus", function(e) {
-        var el = e.target;
-
-        if (calendarAPI.capture(el)) {
+        if (calendarAPI.capture(e.target)) {
             calendarAPI.show();
         }
     });
