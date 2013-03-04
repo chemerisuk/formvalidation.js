@@ -36,6 +36,8 @@ window.addEventListener && (function(document, window) {
         },
         show: function() {
             if (this._target) {
+                this.refresh();
+
                 var boundingRect = this._target.getBoundingClientRect(),
                     clientTop = htmlEl.clientTop || bodyEl.clientTop || 0,
                     clientLeft = htmlEl.clientLeft || bodyEl.clientLeft || 0,
@@ -51,6 +53,9 @@ window.addEventListener && (function(document, window) {
 
                 this._el.removeAttribute("hidden");
             }
+        },
+        refresh: function() {
+            // do nothing
         },
         hide: function() {
             if (this._target !== null) {
@@ -131,7 +136,7 @@ window.addEventListener && (function(document, window) {
             return true;
         };
 
-    var validityAPI = new TooltipAPI({ id: "validity" }, {
+    var validityAPI = new TooltipAPI({ id: "formvalidation_validity" }, {
         capture: function(el) {
             if (this._target === el) {
                 this.refresh();
@@ -139,19 +144,9 @@ window.addEventListener && (function(document, window) {
 
             return !this._target && TooltipAPI.prototype.capture.call(this, el);
         },
-        show: function() {
-            this.refresh();
-
-            TooltipAPI.prototype.show.call(this);
-        },
         refresh: function() {
             var validity = this._target.validity,
-                classesArray = [],
-                errorMessage;
-
-            Object.keys(validity).forEach(function(errorType) {
-                validity[errorType] && classesArray.push(this.getErrorClass(errorType));
-            }, this);
+                i18nSuffix, errorMessage;
             
             if (validity.patternMismatch) {
                 // if pattern check fails use title to get error message
@@ -162,13 +157,19 @@ window.addEventListener && (function(document, window) {
                 errorMessage = this._target.validationMessage;
             }
 
+            errorMessage || Object.keys(validity).some(function(errorType) {
+                if (validity[errorType]) {
+                    return !!(i18nSuffix = this.getErrorClass(errorType));
+                }
+            }, this);
+
             this._el.textContent = errorMessage || "";
-            this._el.className = classesArray.join(" ");
+            this._el.setAttribute("data-i18n", i18nSuffix ? "validity." + i18nSuffix : "");
         },
         getErrorClass: (function() {
             var rUpperCase = /[A-Z]/g,
                 camelCaseToDashSeparated = function(l) {
-                    return "-" + l.toLowerCase();
+                    return "." + l.toLowerCase();
                 };
 
             return function(errorType) {
@@ -176,7 +177,7 @@ window.addEventListener && (function(document, window) {
 
                 if (errorType === "typeMismatch" && inputType) {
                     // special case for email-mismatch, url-mismatch etc.
-                    return inputType.toLowerCase() + "-mismatch";
+                    return inputType.toLowerCase() + ".mismatch";
                 } else {
                     // convert camel case to dash separated
                     return errorType.replace(rUpperCase, camelCaseToDashSeparated);
@@ -352,7 +353,7 @@ window.addEventListener && (function(document, window) {
     // calendar api
 
     var calendarAPI = new TooltipAPI({
-        id: "formvalidationjs_calendar",
+        id: "formvalidation_calendar",
         innerHTML: (function() {
             var content = "<p class='formvalidation-calendar-header'></p><a class='formvalidation-calendar-prev'></a><a class='formvalidation-calendar-next'></a><div class='formvalidation-calendar-days'>";
 
@@ -389,9 +390,9 @@ window.addEventListener && (function(document, window) {
                     calendarAPI._target.blur();
                 }
             } else if (~target.className.lastIndexOf("prev")) {
-                calendarAPI.refresh(new Date(currentYear, currentMonth - 1, 1));
+                calendarAPI.moveTo(new Date(currentYear, currentMonth - 1, 1));
             } else if (~target.className.lastIndexOf("next")) {
-                calendarAPI.refresh(new Date(currentYear, currentMonth + 1, 1));
+                calendarAPI.moveTo(new Date(currentYear, currentMonth + 1, 1));
             }
         }
     }, {
@@ -414,19 +415,17 @@ window.addEventListener && (function(document, window) {
 
             return false;
         },
-        show: function() {
+        refresh: function() {
             var inputValue = this._target.value;
             // switch calendar to appropriate month
-            this.refresh(inputValue ? new Date(inputValue) : new Date());
-            // call prototype's method
-            return TooltipAPI.prototype.show.call(this);
+            this.moveTo(inputValue ? new Date(inputValue) : new Date());
         },
-        refresh: function(date) {
+        moveTo: function(date) {
             var tableEl = this._el.querySelector(".formvalidation-calendar-days"),
                 tableHeader = this._el.querySelector(".formvalidation-calendar-header"),
                 tableCells = Array.prototype.splice.call(tableEl.querySelectorAll("[data-index]"), 0);
 
-            this.refresh = function(date) {
+            this.moveTo = function(date) {
                 var iterDate = new Date(date.getFullYear(), date.getMonth(), 0);
                 // update caption
                 tableHeader.innerHTML = "<span data-i18n='calendar.month." + date.getMonth() + "'></span> " + (isNaN(date.getFullYear()) ? "" : date.getFullYear());
@@ -457,7 +456,7 @@ window.addEventListener && (function(document, window) {
                 }
             };
 
-            this.refresh(date);
+            this.moveTo(date);
         },
         handleEvent: function(e) {
             var inputValue = e.target.value;

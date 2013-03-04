@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta charset="utf-8"> 
 <link rel="stylesheet" href="formvalidation.css">
 <style type="text/css">
 body, select, input {
@@ -9,6 +10,9 @@ body, select, input {
 </style>
 </head>
 <body>
+    <button onclick="this.textContent = 'Change language to ' + document.documentElement.lang; document.documentElement.lang = document.documentElement.lang === 'en' ? 'ru' : 'en'">
+        Change language to ru
+    </button>
     <form action="">
         <p>
             <label>
