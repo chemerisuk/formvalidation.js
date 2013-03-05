@@ -1,15 +1,28 @@
 /*!
  * formvalidation.css (https://github.com/chemerisuk/formvalidation.js)
  *
- * HTML5 form validation api polyfill
+ * HTML5 form validation api polyfill"C:/Users/Maxim/git/formvalidation.js/formvalidation.js"
  *
  * Copyright (c) 2013 Maksim Chemerisuk
  *
  */
-
+.formvalidation-tooltip {
+	position: absolute;
+    z-index: 9999;
+    cursor: default;
+    
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+ 
 /* validity tooltip */
 #formvalidation_validity {
+	z-index: 9998; /* should be below formvalidation_calendar */
+	
     color: #FFF;
+    text-transform: uppercase;
     text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
     background: #DA3E5A;
     
@@ -19,17 +32,6 @@
     
     border-radius: 5px;
     box-shadow: 0 0 5px #AAA;
-    
-    position: absolute;
-    z-index: 9998;
-    cursor: default;
-    
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    
-    text-transform: uppercase;
 }
 
 #formvalidation_validity:after {
@@ -48,16 +50,8 @@
 
 /* calendar */
 #formvalidation_calendar {
-    position: absolute;
     border: 1px solid #CCC;
-    background: white;
-
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    z-index: 9999;
-
+    background: #FFF;
     box-shadow: 0 0 1em #CCC;
 }
 
@@ -156,14 +150,12 @@
 
 /* I18N */
 
+/* default language */
+
 /* validity */
 [data-i18n="validity.value.missing"]:before { content: "Please fill this field" }
 [data-i18n="validity.type.mismatch"]:before { content: "Value has illegal format" }
 [data-i18n="validity.email.mismatch"]:before { content: "There should be a valid email" }
-
-[data-i18n="validity.value.missing"]:lang(ru):before { content: "Это поле не может быть пустым" }
-[data-i18n="validity.type.mismatch"]:lang(ru):before { content: "Введенное значение имеет недопустимый формат" }
-[data-i18n="validity.email.mismatch"]:lang(ru):before { content: "Здесь должен быть правильный email" }
 
 /* monthes */
 [data-i18n="calendar.month.NaN"]:before { content: "Invalid date" }
@@ -174,7 +166,7 @@
 [data-i18n="calendar.month.4"]:before { content: "May" }
 [data-i18n="calendar.month.5"]:before { content: "June" }
 [data-i18n="calendar.month.6"]:before { content: "July" }
-[data-i18n="calendar.month.7"]:before { content: "April" }
+[data-i18n="calendar.month.7"]:before { content: "August" }
 [data-i18n="calendar.month.8"]:before { content: "September" }
 [data-i18n="calendar.month.9"]:before { content: "October" }
 [data-i18n="calendar.month.10"]:before { content: "November" }
@@ -188,3 +180,34 @@
 [data-i18n="calendar.weekday.4"]:before { content: "Fri" }
 [data-i18n="calendar.weekday.5"]:before { content: "Sat" }
 [data-i18n="calendar.weekday.6"]:before { content: "Sun" }
+
+/* ru language */
+
+/* validity */
+[data-i18n="validity.value.missing"]:lang(ru):before { content: "Это поле не может быть пустым" }
+[data-i18n="validity.type.mismatch"]:lang(ru):before { content: "Введенное значение имеет недопустимый формат" }
+[data-i18n="validity.email.mismatch"]:lang(ru):before { content: "Здесь должен быть правильный email" }
+
+/* monthes */
+[data-i18n="calendar.month.NaN"]:lang(ru):before { content: "Неправильная дата" }
+[data-i18n="calendar.month.0"]:lang(ru):before { content: "Январь" }
+[data-i18n="calendar.month.1"]:lang(ru):before { content: "Февраль" }
+[data-i18n="calendar.month.2"]:lang(ru):before { content: "Март" }
+[data-i18n="calendar.month.3"]:lang(ru):before { content: "Апрель" }
+[data-i18n="calendar.month.4"]:lang(ru):before { content: "Май" }
+[data-i18n="calendar.month.5"]:lang(ru):before { content: "Июнь" }
+[data-i18n="calendar.month.6"]:lang(ru):before { content: "Июль" }
+[data-i18n="calendar.month.7"]:lang(ru):before { content: "Август" }
+[data-i18n="calendar.month.8"]:lang(ru):before { content: "Сентябрь" }
+[data-i18n="calendar.month.9"]:lang(ru):before { content: "Октябрь" }
+[data-i18n="calendar.month.10"]:lang(ru):before { content: "Ноябрь" }
+[data-i18n="calendar.month.11"]:lang(ru):before { content: "Декабрь" }
+
+/* days of week */
+[data-i18n="calendar.weekday.0"]:lang(ru):before { content: "Пн" }
+[data-i18n="calendar.weekday.1"]:lang(ru):before { content: "Вт" }
+[data-i18n="calendar.weekday.2"]:lang(ru):before { content: "Ср" }
+[data-i18n="calendar.weekday.3"]:lang(ru):before { content: "Чт" }
+[data-i18n="calendar.weekday.4"]:lang(ru):before { content: "Пт" }
+[data-i18n="calendar.weekday.5"]:lang(ru):before { content: "Сб" }
+[data-i18n="calendar.weekday.6"]:lang(ru):before { content: "Вс" }

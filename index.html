@@ -7,11 +7,20 @@
 body, select, input {
     font-size: 14px;
 }
+
+.change-lang-btn:after { 
+	content: 'ru';
+	font-weight: bold;
+}
+
+.change-lang-btn:lang(ru):after { 
+	content: 'en' 
+}
 </style>
 </head>
 <body>
-    <button onclick="this.textContent = 'Change language to ' + document.documentElement.lang; document.documentElement.lang = document.documentElement.lang === 'en' ? 'ru' : 'en'">
-        Change language to ru
+    <button class="change-lang-btn" onclick="document.documentElement.lang = document.documentElement.lang === 'en' ? 'ru' : 'en'">
+        Change plugin language to 
     </button>
     <form action="">
         <p>

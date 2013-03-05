@@ -14,6 +14,8 @@ window.addEventListener && (function(document, window) {
         Object.keys(options || {}).forEach(function(key) {
             el[key] = options[key];
         });
+        
+        el.className = "formvalidation-tooltip";
 
         el.onmousedown = function(e) {
             // fix problems with loosing focus when click on tooltip
@@ -51,7 +53,7 @@ window.addEventListener && (function(document, window) {
                 this._el.style.left = boundingRect.left + scrollLeft - clientLeft + "px";
                 this._el.style.top = boundingRect.bottom + scrollTop - clientTop + "px";
 
-                this._el.removeAttribute("hidden");
+                this._el.style.visibility = "visible";
             }
         },
         refresh: function() {
@@ -60,7 +62,7 @@ window.addEventListener && (function(document, window) {
         hide: function() {
             if (this._target !== null) {
                 this._target = null;
-                this._el.setAttribute("hidden", "");
+                this._el.style.visibility = "hidden";
             }
         }
     };
