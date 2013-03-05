@@ -1,11 +1,11 @@
 {
     "name": "formvalidation",
-    "version": "1.0.3",
+    "version": "1.1.0",
     "main": "formvalidation.js",
     "author": {
         "name": "Maksim Chemerisuk"
     },
-    "description": "HTML5 form validation api polyfill.",
+    "description": "HTML5 forms polyfill",
     "readmeFilename": "README.md",
     "repository": {
         "type": "git",
