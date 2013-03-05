@@ -1,7 +1,7 @@
 /*!
  * formvalidation.js (https://github.com/chemerisuk/formvalidation.js)
  *
- * HTML5 form validation api polyfill
+ * HTML5 forms polyfill
  *
  * Copyright (c) 2013 Maksim Chemerisuk
  *

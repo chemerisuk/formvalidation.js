@@ -1,13 +1,13 @@
 formvalidation.js
-=============
-HTML5 form validation api polyfill.
+=================
+HTML5 forms polyfill
 
 Features
 --------
 * no additional dependencies
 * doesn't require initialization call on each form
-* tooltip is fully customizable via CSS
-* error messages are fully customizable
+* every UI element and text content is fully customizable via CSS
+* displays calendar control for `input[type="date"]`
 * internationalization support
 
 Example usage
@@ -26,7 +26,7 @@ All you need is to include several additional files on your page:
   </body>
 </html>
 ```
-This plugin doesn't require any initialization, it just works. Thats why it's perfect for single-page websites with ajax navigation. 
+No initialization is required, it just works. And even for dynamic content. So it's perfect for single-page websites with ajax navigation. 
 
 JavaScript API
 --------------
@@ -34,41 +34,24 @@ Plugin uses standards-based javascript API to display validation messages progra
 
 Internationalization
 --------------------
-The plugin stores message strings in css. To display them it uses `:before` pseudoelement:
+All message strings are stored in css. To display them `data-i18n` attribute is used with combination of `:before` pseudoelement:
 ```css
-#validity.value-missing:after {
-    content: "Please fill this field"
-}
-
-#validity.type-mismatch:after {
-    content: "Value has illegal format"
-}
-
-#validity.email-mismatch:after {
-    content: "There is should be a valid email"
-}
+[data-i18n="validity.value.missing"]:before { content: "Please fill this field" }
+[data-i18n="validity.type.mismatch"]:before { content: "Value has illegal format" }
+[data-i18n="validity.email.mismatch"]:before { content: "There should be a valid email" }
 ```
-To localize strings in css `:lang()` selector is used:
+`:lang` selector allows to target specific language and localize strings for it:
 ```css
-#validity.value-missing:lang(ru):after {
-    content: "Это поле не может быть пустым"
-}
-
-#validity.type-mismatch:lang(ru):after {
-    content: "Введенное значение имеет недопустимый формат"
-}
-
-#validity.email-mismatch:after {
-    content: "Здесь должен быть правильный email"
-}
+[data-i18n="validity.value.missing"]:lang(ru):before { content: "Это поле не может быть пустым" }
+[data-i18n="validity.type.mismatch"]:lang(ru):before { content: "Введенное значение имеет недопустимый формат" }
+[data-i18n="validity.email.mismatch"]:lang(ru):before { content: "Здесь должен быть правильный email" }
 ```
-So it means you need an appropriate `lang` attribute value for the `<html>` element to change language of validation messages.
+Therefore you need an appropriate `lang` attribute value for the `<html>` element to change plugin language.
 
 TODOs
 -----
-1. add `input[type=date]` support with calendar control
-2. add `input[type=number]` support with spin buttons
-3. IE8 support
+1. add `input[type=number]` support with spin buttons
+2. IE8 support?
 
 Browser support
 ---------------
