@@ -185,7 +185,7 @@
 
 /* validity */
 [data-i18n="validity.value.missing"]:lang(ru):before { content: "Это поле не может быть пустым" }
-[data-i18n="validity.type.mismatch"]:lang(ru):before { content: "Введенное значение имеет недопустимый формат" }
+[data-i18n="validity.type.mismatch"]:lang(ru):before { content: "Значение имеет недопустимый формат" }
 [data-i18n="validity.email.mismatch"]:lang(ru):before { content: "Здесь должен быть правильный email" }
 
 /* monthes */

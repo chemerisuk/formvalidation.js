@@ -52,13 +52,10 @@ window.addEventListener && (function(document, window) {
 
                 this._el.style.left = boundingRect.left + scrollLeft - clientLeft + "px";
                 this._el.style.top = boundingRect.bottom + scrollTop - clientTop + "px";
-
                 this._el.style.visibility = "visible";
             }
         },
-        refresh: function() {
-            // do nothing
-        },
+        refresh: function() {},
         hide: function() {
             if (this._target !== null) {
                 this._target = null;
@@ -83,20 +80,15 @@ window.addEventListener && (function(document, window) {
 
             thisPtr.dispatchEvent(evt);
         },
-        listenSelector = (function() {
+        watch = (function() {
             // use trick discovered by Daniel Buchner to style dateinputs
             // https://github.com/csuwldcat/SelectorListener
             var styles = headEl.appendChild(document.createElement("style")),
                 keyframes = headEl.appendChild(document.createElement("style")),
                 startNames = ["animationstart", "oAnimationStart", "MSAnimationStart", "webkitAnimationStart"],
-                startEvent = function(event) {
-                    event.selector = (events[event.animationName] || {}).selector;
-
-                    (listeners[event.animationName] || {}).call(document, event);
-                },
                 prefix = (function() {
                     var duration = "animation-duration: 0.01s;",
-                        name = "animation-name: SelectorListener !important;",
+                        name = "animation-name: formvalidation !important;",
                         computed = window.getComputedStyle(htmlEl, ""),
                         pre = (Array.prototype.slice.call(computed).join("").match(/moz|webkit|ms/)||(computed.OLink===""&&["o"]))[0];
                     return {
@@ -107,9 +99,9 @@ window.addEventListener && (function(document, window) {
                 })();
 
             return function(selector, fn) {
-                var animationName = "SelectorListener-" + new Date().getTime();
+                var animationName = "formvalidation-" + new Date().getTime();
 
-                styles.sheet.insertRule(selector + prefix.properties.replace(/SelectorListener/g, animationName), 0);
+                styles.sheet.insertRule(selector + prefix.properties.replace(/formvalidation/g, animationName), 0);
 
                 keyframes.appendChild(
                     document.createTextNode("@" + (prefix.keyframes ? prefix.css : "") + "keyframes " + animationName +
@@ -126,16 +118,8 @@ window.addEventListener && (function(document, window) {
                 });
             };
         })(),
-        none = function(form, test) {
-            var inputs = Array.prototype.slice.call(form.elements, 0);
-
-            for (var i = 0, n = inputs.length; i < n; ++i) {
-                if (!test(inputs[i])) {
-                    return false;
-                }
-            }
-
-            return true;
+        any = function(form, test, thisPtr) {
+        	return Array.prototype.slice.call(form.elements, 0).some(test, thisPtr);
         };
 
     var validityAPI = new TooltipAPI({ id: "formvalidation_validity" }, {
@@ -194,7 +178,9 @@ window.addEventListener && (function(document, window) {
     if (!("validity" in document.createElement("input"))) {
         var rNumber = /^-?[0-9]*(\.[0-9]+)?$/,
             rEmail = /^([a-z0-9_\.\-\+]+)@([\da-z\.\-]+)\.([a-z\.]{2,6})$/i,
-            rUrl = /^(https?:\/\/)?[\da-z\.\-]+\.[a-z\.]{2,6}[#&+_\?\/\w \.\-=]*$/i;
+            rUrl = /^(https?:\/\/)?[\da-z\.\-]+\.[a-z\.]{2,6}[#&+_\?\/\w \.\-=]*$/i,
+            hasCheckedRadio = function(el) { return el.checked && el.name === this; },
+            hasInvalidElement = function(el) { return el.checkValidity && !el.checkValidity(); };
         
         window.ValidityState = function() {
             this.customError = false;
@@ -235,9 +221,7 @@ window.addEventListener && (function(document, window) {
                     if (!this.checked && this.hasAttribute("required")) {
                         var name = this.name;
 
-                        validity.valueMissing = none(this.form, function(input) {
-                            return input.checked && input.name === name;
-                        });
+                        validity.valueMissing = !any(this.form, hasCheckedRadio, this);
                         validity.valid = !validity.valueMissing;
                     }
                     break;
@@ -268,9 +252,7 @@ window.addEventListener && (function(document, window) {
                             var pattern = this.getAttribute("pattern");
                             
                             if (pattern) {
-                                pattern = new RegExp("^(?:" + pattern + ")$");
-                                
-                                validity.patternMismatch = !pattern.test(this.value);
+                                validity.patternMismatch = !new RegExp("^(?:" + pattern + ")$").test(this.value);
                                 validity.valid = !validity.patternMismatch;
                             }
                         }
@@ -293,9 +275,7 @@ window.addEventListener && (function(document, window) {
         };
         
         HTMLFormElement.prototype.checkValidity = function() {
-            return none(this, function(input) {
-                return !input.checkValidity || input.checkValidity();
-            });
+            return !any(this, hasInvalidElement);
         };
     }
     
@@ -303,7 +283,6 @@ window.addEventListener && (function(document, window) {
         if (validityAPI.capture(e.target)) {
             validityAPI.show();
         }
-        //validityAPI.show(e.target, false);
         // don't show native tooltip
         e.preventDefault();
     });
@@ -400,7 +379,7 @@ window.addEventListener && (function(document, window) {
     }, {
         capture: function(el) {
             if (el.nodeName === "INPUT") {
-                // init calendar for browsers that don't support listenSelector
+                // init calendar for browsers that don't support watch
                 if (el.getAttribute("type") === "date") {
                     // remove legacy dateinput if it exists
                     el.type = "text";
@@ -467,8 +446,8 @@ window.addEventListener && (function(document, window) {
         }
     });
 
-    listenSelector("input[type='date']", function(e) {
-        // init calendar for browsers that support listenSelector
+    watch("input[type='date']", function(e) {
+        // init calendar for browsers that support watch
         calendarAPI.capture(e.target);
     });
 
