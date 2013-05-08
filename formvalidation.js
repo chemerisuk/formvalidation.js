@@ -140,7 +140,7 @@ window.addEventListener && (function(document, window) {
                 this._el.setAttribute("for", this._target.id)
         },
         hide: function() {
-            TooltipAPI.prototype.show.apply(this, arguments);
+            TooltipAPI.prototype.hide.apply(this, arguments);
             if (this._target && this._target.id)
                 this._el.removeAttribute("for");
         }
