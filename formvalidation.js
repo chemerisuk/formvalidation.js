@@ -9,7 +9,7 @@
 window.addEventListener && (function(document, window) {
     // helper type
     function TooltipAPI(options, overrides) {
-        var el = document.createElement("label");
+        var el = document.createElement(options.tagName || "label");
 
         Object.keys(options || {}).forEach(function(key) {
             el[key] = options[key];
@@ -337,6 +337,7 @@ window.addEventListener && (function(document, window) {
 
     var calendarAPI = new TooltipAPI({
         id: "formvalidation_calendar",
+        tagName: 'div',
         innerHTML: (function() {
             var content = "<p class='formvalidation-calendar-header'></p><a class='formvalidation-calendar-prev'></a><a class='formvalidation-calendar-next'></a><div class='formvalidation-calendar-days'>";
 
