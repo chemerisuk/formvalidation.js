@@ -54,8 +54,6 @@ window.addEventListener && (function(document, window) {
                 this._el.style.left = boundingRect.left + scrollLeft - clientLeft + "px";
                 this._el.style.top = boundingRect.bottom + scrollTop - clientTop + "px";
                 this._el.removeAttribute("hidden");
-                if (this._target.id)
-                    this._el.setAttribute("for", this._target.id)
             }
         },
         refresh: function() {},
@@ -127,7 +125,7 @@ window.addEventListener && (function(document, window) {
         };
 
     var validityAPI = new TooltipAPI({ id: "formvalidation_validity" }, {
-        tagName: "div",
+        tagName: "label",
         capture: function(el) {
             if (this._target === el) {
                 this.refresh();
@@ -139,6 +137,11 @@ window.addEventListener && (function(document, window) {
             if (!this._el.getAttribute('for')) {
                 this._target.click();
             }
+        },
+        show: function() {
+            TooltipAPI.prototype.show.apply(this, arguments);
+            if (this._target && this._target.id)
+                this._el.setAttribute("for", this._target.id)
         },
         refresh: function() {
             var validity = this._target.validity,
