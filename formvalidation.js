@@ -9,10 +9,11 @@
 window.addEventListener && (function(document, window) {
     // helper type
     function TooltipAPI(options, overrides) {
-        var el = document.createElement(options && options.tagName || "label");
+        var el = document.createElement(options && options.tagName || "div");
 
         Object.keys(options || {}).forEach(function(key) {
-            el[key] = options[key];
+            if (key != 'tagName')
+                el[key] = options[key];
         });
         
         el.className = "formvalidation-tooltip";
@@ -52,16 +53,17 @@ window.addEventListener && (function(document, window) {
 
                 this._el.style.left = boundingRect.left + scrollLeft - clientLeft + "px";
                 this._el.style.top = boundingRect.bottom + scrollTop - clientTop + "px";
-                this._el.style.visibility = "visible";
+                this._el.removeAttribute("hidden");
                 if (this._target.id)
-                    this._el.setAttribute('for', this._target.id)
+                    this._el.setAttribute("for", this._target.id)
             }
         },
         refresh: function() {},
         hide: function() {
             if (this._target !== null) {
                 this._target = null;
-                this._el.style.visibility = "hidden";
+                this._el.setAttribute("hidden", "hidden");
+                this._el.removeAttribute("for");
             }
         }
     };
@@ -125,12 +127,18 @@ window.addEventListener && (function(document, window) {
         };
 
     var validityAPI = new TooltipAPI({ id: "formvalidation_validity" }, {
+        tagName: "div",
         capture: function(el) {
             if (this._target === el) {
                 this.refresh();
             }
 
             return !this._target && TooltipAPI.prototype.capture.call(this, el);
+        },
+        onclick: function() {
+            if (!this._el.getAttribute('for')) {
+                this._target.click();
+            }
         },
         refresh: function() {
             var validity = this._target.validity,
@@ -337,7 +345,6 @@ window.addEventListener && (function(document, window) {
 
     var calendarAPI = new TooltipAPI({
         id: "formvalidation_calendar",
-        tagName: 'div',
         innerHTML: (function() {
             var content = "<p class='formvalidation-calendar-header'></p><a class='formvalidation-calendar-prev'></a><a class='formvalidation-calendar-next'></a><div class='formvalidation-calendar-days'>";
 
