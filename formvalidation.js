@@ -17,8 +17,10 @@ window.addEventListener && (function(document, window) {
         });
         
         el.className = "formvalidation-tooltip";
-
+        
+        var self = this;
         el.onmousedown = function(e) {
+            self._target.focus();
             // fix problems with loosing focus when click on tooltip
             e.preventDefault();
             e.stopPropagation();
@@ -132,11 +134,6 @@ window.addEventListener && (function(document, window) {
             }
 
             return !this._target && TooltipAPI.prototype.capture.call(this, el);
-        },
-        onclick: function() {
-            if (!this._el.getAttribute('for')) {
-                this._target.click();
-            }
         },
         show: function() {
             TooltipAPI.prototype.show.apply(this, arguments);
