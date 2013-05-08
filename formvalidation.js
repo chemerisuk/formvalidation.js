@@ -9,7 +9,7 @@
 window.addEventListener && (function(document, window) {
     // helper type
     function TooltipAPI(options, overrides) {
-        var el = document.createElement(options.tagName || "label");
+        var el = document.createElement(options && options.tagName || "label");
 
         Object.keys(options || {}).forEach(function(key) {
             el[key] = options[key];
