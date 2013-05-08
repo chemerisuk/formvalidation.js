@@ -9,7 +9,7 @@
 window.addEventListener && (function(document, window) {
     // helper type
     function TooltipAPI(options, overrides) {
-        var el = document.createElement("div");
+        var el = document.createElement("label");
 
         Object.keys(options || {}).forEach(function(key) {
             el[key] = options[key];
@@ -53,6 +53,8 @@ window.addEventListener && (function(document, window) {
                 this._el.style.left = boundingRect.left + scrollLeft - clientLeft + "px";
                 this._el.style.top = boundingRect.bottom + scrollTop - clientTop + "px";
                 this._el.style.visibility = "visible";
+                if (this._target.id)
+                    this._el.setAttribute('for', this._target.id)
             }
         },
         refresh: function() {},
