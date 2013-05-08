@@ -9,15 +9,18 @@
 window.addEventListener && (function(document, window) {
     // helper type
     function TooltipAPI(options, overrides) {
-        var el = document.createElement("div");
+        var el = document.createElement(options && options.tagName || "div");
 
         Object.keys(options || {}).forEach(function(key) {
-            el[key] = options[key];
+            if (key != 'tagName')
+                el[key] = options[key];
         });
         
         el.className = "formvalidation-tooltip";
-
+        
+        var self = this;
         el.onmousedown = function(e) {
+            self._target.focus();
             // fix problems with loosing focus when click on tooltip
             e.preventDefault();
             e.stopPropagation();
@@ -52,14 +55,14 @@ window.addEventListener && (function(document, window) {
 
                 this._el.style.left = boundingRect.left + scrollLeft - clientLeft + "px";
                 this._el.style.top = boundingRect.bottom + scrollTop - clientTop + "px";
-                this._el.style.visibility = "visible";
+                this._el.removeAttribute("hidden");
             }
         },
         refresh: function() {},
         hide: function() {
             if (this._target !== null) {
                 this._target = null;
-                this._el.style.visibility = "hidden";
+                this._el.setAttribute("hidden", "hidden");
             }
         }
     };
@@ -123,6 +126,7 @@ window.addEventListener && (function(document, window) {
         };
 
     var validityAPI = new TooltipAPI({ id: "formvalidation_validity" }, {
+        tagName: "label",
         capture: function(el) {
             if (this._target === el) {
                 this.refresh();
@@ -130,6 +134,16 @@ window.addEventListener && (function(document, window) {
 
             return !this._target && TooltipAPI.prototype.capture.call(this, el);
         },
+        show: function() {
+            TooltipAPI.prototype.show.apply(this, arguments);
+            if (this._target && this._target.id)
+                this._el.setAttribute("for", this._target.id)
+        },
+        hide: function() {
+            TooltipAPI.prototype.hide.apply(this, arguments);
+            if (this._target && this._target.id)
+                this._el.removeAttribute("for");
+        }
         refresh: function() {
             var validity = this._target.validity,
                 i18nSuffix, errorMessage;
