@@ -63,7 +63,6 @@ window.addEventListener && (function(document, window) {
             if (this._target !== null) {
                 this._target = null;
                 this._el.setAttribute("hidden", "hidden");
-                this._el.removeAttribute("for");
             }
         }
     };
@@ -140,6 +139,11 @@ window.addEventListener && (function(document, window) {
             if (this._target && this._target.id)
                 this._el.setAttribute("for", this._target.id)
         },
+        hide: function() {
+            TooltipAPI.prototype.show.apply(this, arguments);
+            if (this._target && this._target.id)
+                this._el.removeAttribute("for");
+        }
         refresh: function() {
             var validity = this._target.validity,
                 i18nSuffix, errorMessage;
