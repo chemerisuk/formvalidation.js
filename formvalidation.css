@@ -154,8 +154,8 @@
 
 /* validity */
 [data-i18n="validity.value.missing"]:before { content: "Please fill this field" }
-[data-i18n="validity.type.mismatch"]:before { content: "Value has illegal format" }
-[data-i18n="validity.email.mismatch"]:before { content: "There should be a valid email" }
+[data-i18n="validity.type.mismatch"]:before { content: "The value has illegal format" }
+[data-i18n="validity.email.mismatch"]:before { content: "Should be a valid email" }
 
 /* monthes */
 [data-i18n="calendar.month.NaN"]:before { content: "Invalid date" }

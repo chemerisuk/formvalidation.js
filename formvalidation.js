@@ -12,7 +12,7 @@ window.addEventListener && (function(document, window) {
         var el = document.createElement(options && options.tagName || "div");
 
         Object.keys(options || {}).forEach(function(key) {
-            if (key != 'tagName')
+            if (key !== "tagName")
                 el[key] = options[key];
         });
         
@@ -122,7 +122,7 @@ window.addEventListener && (function(document, window) {
             };
         })(),
         any = function(form, test, thisPtr) {
-        	return Array.prototype.slice.call(form.elements, 0).some(test, thisPtr);
+            return Array.prototype.slice.call(form.elements, 0).some(test, thisPtr);
         };
 
     var validityAPI = new TooltipAPI({ id: "formvalidation_validity" }, {
@@ -137,13 +137,13 @@ window.addEventListener && (function(document, window) {
         show: function() {
             TooltipAPI.prototype.show.apply(this, arguments);
             if (this._target && this._target.id)
-                this._el.setAttribute("for", this._target.id)
+                this._el.setAttribute("for", this._target.id);
         },
         hide: function() {
             TooltipAPI.prototype.hide.apply(this, arguments);
             if (this._target && this._target.id)
                 this._el.removeAttribute("for");
-        }
+        },
         refresh: function() {
             var validity = this._target.validity,
                 i18nSuffix, errorMessage;
@@ -199,19 +199,20 @@ window.addEventListener && (function(document, window) {
             rEmail = /^([a-z0-9_\.\-\+]+)@([\da-z\.\-]+)\.([a-z\.]{2,6})$/i,
             rUrl = /^(https?:\/\/)?[\da-z\.\-]+\.[a-z\.]{2,6}[#&+_\?\/\w \.\-=]*$/i,
             hasCheckedRadio = function(el) { return el.checked && el.name === this; },
-            hasInvalidElement = function(el) { return el.checkValidity && !el.checkValidity(); };
-        
-        window.ValidityState = function() {
-            this.customError = false;
-            this.patternMismatch = false;
-            this.rangeOverflow = false;
-            this.rangeUnderflow = false;
-            this.stepMismatch = false;
-            this.tooLong = false;
-            this.typeMismatch = false;
-            this.valid = true;
-            this.valueMissing = false;
-        };
+            hasInvalidElement = function(el) { return el.checkValidity && !el.checkValidity(); },
+            ValidityState = function() {
+                this.customError = false;
+                this.patternMismatch = false;
+                this.rangeOverflow = false;
+                this.rangeUnderflow = false;
+                this.stepMismatch = false;
+                this.tooLong = false;
+                this.typeMismatch = false;
+                this.valid = true;
+                this.valueMissing = false;
+            };
+
+        window.ValidityState = ValidityState;
         
         HTMLInputElement.prototype.setCustomValidity =
         HTMLTextAreaElement.prototype.setCustomValidity =
@@ -226,59 +227,58 @@ window.addEventListener && (function(document, window) {
             var validity = new ValidityState();
             
             switch(this.type) {
-                case "image":
-                case "submit":
-                case "button":
-                    return true;
+            case "image":
+            case "submit":
+            case "button":
+                return true;
 
-                case "select-one":
-                case "select-multiple":
-                    // for a select only check custom error case
-                    break;
+            case "select-one":
+            case "select-multiple":
+                // for a select only check custom error case
+                break;
                 
-                case "radio":
-                    if (!this.checked && this.hasAttribute("required")) {
-                        var name = this.name;
+            case "radio":
+                if (!this.checked && this.hasAttribute("required")) {
+                    var name = this.name;
 
-                        validity.valueMissing = !any(this.form, hasCheckedRadio, this);
-                        validity.valid = !validity.valueMissing;
-                    }
-                    break;
-
-                case "checkbox":
-                    validity.valueMissing = (!this.checked && this.hasAttribute("required"));
+                    validity.valueMissing = !any(this.form, hasCheckedRadio, this);
                     validity.valid = !validity.valueMissing;
-                    break;
+                }
+                break;
 
-                default: {
-                    if (this.value) {
-                        switch (this.getAttribute("type")) {
-                        case "number":
-                            validity.typeMismatch = !numberRe.test(this.value);
-                            validity.valid = !validity.typeMismatch;
-                            break;
-                        case "email":
-                            validity.typeMismatch = !rEmail.test(this.value);
-                            validity.valid = !validity.typeMismatch;
-                            break;
-                        case "url":
-                            validity.typeMismatch = !rUrl.test(this.value);
-                            validity.valid = !validity.typeMismatch;
-                            break;
-                        }
+            case "checkbox":
+                validity.valueMissing = (!this.checked && this.hasAttribute("required"));
+                validity.valid = !validity.valueMissing;
+                break;
 
-                        if (this.type !== "textarea") {
-                            var pattern = this.getAttribute("pattern");
-                            
-                            if (pattern) {
-                                validity.patternMismatch = !new RegExp("^(?:" + pattern + ")$").test(this.value);
-                                validity.valid = !validity.patternMismatch;
-                            }
-                        }
-                    } else {
-                        validity.valueMissing = this.hasAttribute("required");
-                        validity.valid = !validity.valueMissing;
+            default:
+                if (this.value) {
+                    switch (this.getAttribute("type")) {
+                    case "number":
+                        validity.typeMismatch = !rNumber.test(this.value);
+                        validity.valid = !validity.typeMismatch;
+                        break;
+                    case "email":
+                        validity.typeMismatch = !rEmail.test(this.value);
+                        validity.valid = !validity.typeMismatch;
+                        break;
+                    case "url":
+                        validity.typeMismatch = !rUrl.test(this.value);
+                        validity.valid = !validity.typeMismatch;
+                        break;
                     }
+
+                    if (this.type !== "textarea") {
+                        var pattern = this.getAttribute("pattern");
+                        
+                        if (pattern) {
+                            validity.patternMismatch = !new RegExp("^(?:" + pattern + ")$").test(this.value);
+                            validity.valid = !validity.patternMismatch;
+                        }
+                    }
+                } else {
+                    validity.valueMissing = this.hasAttribute("required");
+                    validity.valid = !validity.valueMissing;
                 }
             }
             
@@ -348,8 +348,8 @@ window.addEventListener && (function(document, window) {
         var form = validityAPI.getForm();
         if (form) {
             for (var parent = e.target; parent; parent = parent.parentNode) {
-                if (parent == form) {
-                    return
+                if (parent === form) {
+                    return;
                 }
             }
         }
