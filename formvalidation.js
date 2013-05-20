@@ -157,11 +157,16 @@ window.addEventListener && (function(document, window) {
                 errorMessage = this._target.validationMessage;
             }
 
-            errorMessage || Object.keys(validity).some(function(errorType) {
-                if (validity[errorType]) {
-                    return !!(i18nSuffix = this.getErrorClass(errorType));
+            if (!errorMessage) {
+                for (var errorType in validity) {
+                    if (validity[errorType]) {
+                        i18nSuffix = this.getErrorClass(errorType);
+                        if (i18nSuffix) {
+                            break;
+                        }  
+                    }
                 }
-            }, this);
+            }
 
             this._el.textContent = errorMessage || "";
             this._el.setAttribute("data-i18n", i18nSuffix ? "validity." + i18nSuffix : "");
@@ -340,9 +345,15 @@ window.addEventListener && (function(document, window) {
     
     bindCapturingEvent("click", function(e) {
         // hide tooltip when user goes to other part of page
-        if (e.target.form !== validityAPI.getForm()) {
-            validityAPI.hide();
+        var form = validityAPI.getForm();
+        if (form) {
+            for (var parent = e.target; parent; parent = parent.parentNode) {
+                if (parent == form) {
+                    return
+                }
+            }
         }
+        validityAPI.hide();
     });
 
     // calendar api
