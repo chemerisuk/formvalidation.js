@@ -12,8 +12,7 @@ window.addEventListener && (function(document, window) {
         var el = document.createElement(options && options.tagName || "div");
 
         Object.keys(options || {}).forEach(function(key) {
-            if (key !== "tagName")
-                el[key] = options[key];
+            if (key !== "tagName") el[key] = options[key];
         });
         
         el.className = "formvalidation-tooltip";
@@ -198,6 +197,7 @@ window.addEventListener && (function(document, window) {
         var rNumber = /^-?[0-9]*(\.[0-9]+)?$/,
             rEmail = /^([a-z0-9_\.\-\+]+)@([\da-z\.\-]+)\.([a-z\.]{2,6})$/i,
             rUrl = /^(https?:\/\/)?[\da-z\.\-]+\.[a-z\.]{2,6}[#&+_\?\/\w \.\-=]*$/i,
+            predefinedPatterns = {number: rNumber, email: rEmail, url: rUrl},
             hasCheckedRadio = function(el) { return el.checked && el.name === this; },
             hasInvalidElement = function(el) { return el.checkValidity && !el.checkValidity(); },
             ValidityState = function() {
@@ -213,85 +213,75 @@ window.addEventListener && (function(document, window) {
             };
 
         window.ValidityState = ValidityState;
-        
-        HTMLInputElement.prototype.setCustomValidity =
-        HTMLTextAreaElement.prototype.setCustomValidity =
-        HTMLSelectElement.prototype.setCustomValidity = function(message) {
-            this.validationMessage = message;
-            this.validity.customError = !!message;
-        };
-        
-        HTMLInputElement.prototype.checkValidity =
-        HTMLTextAreaElement.prototype.checkValidity =
-        HTMLSelectElement.prototype.checkValidity = function() {
-            var validity = new ValidityState();
-            
-            switch(this.type) {
-            case "image":
-            case "submit":
-            case "button":
-                return true;
 
-            case "select-one":
-            case "select-multiple":
-                // for a select only check custom error case
-                break;
+        [HTMLInputElement, HTMLTextAreaElement, HTMLSelectElement].forEach(function(Type) {
+            Type.prototype.setCustomValidity = function(message) {
+                this.validationMessage = message;
+                this.validity.customError = !!message;
+            };
+
+            Type.prototype.checkValidity = function() {
+                var validity = new ValidityState();
                 
-            case "radio":
-                if (!this.checked && this.hasAttribute("required")) {
-                    var name = this.name;
+                switch(this.type) {
+                case "image":
+                case "submit":
+                case "button":
+                    return true;
 
-                    validity.valueMissing = !any(this.form, hasCheckedRadio, this);
-                    validity.valid = !validity.valueMissing;
-                }
-                break;
+                case "select-one":
+                case "select-multiple":
+                    // for a select only check custom error case
+                    break;
+                    
+                case "radio":
+                    if (!this.checked && this.hasAttribute("required")) {
+                        var name = this.name;
 
-            case "checkbox":
-                validity.valueMissing = (!this.checked && this.hasAttribute("required"));
-                validity.valid = !validity.valueMissing;
-                break;
-
-            default:
-                if (this.value) {
-                    switch (this.getAttribute("type")) {
-                    case "number":
-                        validity.typeMismatch = !rNumber.test(this.value);
-                        validity.valid = !validity.typeMismatch;
-                        break;
-                    case "email":
-                        validity.typeMismatch = !rEmail.test(this.value);
-                        validity.valid = !validity.typeMismatch;
-                        break;
-                    case "url":
-                        validity.typeMismatch = !rUrl.test(this.value);
-                        validity.valid = !validity.typeMismatch;
-                        break;
+                        validity.valueMissing = !any(this.form, hasCheckedRadio, this);
+                        validity.valid = !validity.valueMissing;
                     }
+                    break;
 
-                    if (this.type !== "textarea") {
-                        var pattern = this.getAttribute("pattern");
-                        
-                        if (pattern) {
-                            validity.patternMismatch = !new RegExp("^(?:" + pattern + ")$").test(this.value);
-                            validity.valid = !validity.patternMismatch;
+                case "checkbox":
+                    validity.valueMissing = (!this.checked && this.hasAttribute("required"));
+                    validity.valid = !validity.valueMissing;
+                    break;
+
+                default:
+                    if (this.value) {
+                        var regexp = predefinedPatterns[this.getAttribute("type")];
+
+                        if (regexp) {
+                            validity.typeMismatch = !regexp.test(this.value);
+                            validity.valid = !validity.typeMismatch;
                         }
-                    }
-                } else {
-                    validity.valueMissing = this.hasAttribute("required");
-                    validity.valid = !validity.valueMissing;
-                }
-            }
-            
-            if (this.validity) {
-                validity.customError = this.validity.customError;
-                validity.validationMessage = this.validity.validationMessage;
-                validity.valid = validity.valid && !validity.customError;
-            }
-            
-            this.validity = validity;
 
-            return validity.valid || !!fireEvent("invalid", this);
-        };
+                        if (this.type !== "textarea") {
+                            regexp = this.getAttribute("pattern");
+                            
+                            if (regexp) {
+                                validity.patternMismatch = !new RegExp("^(?:" + regexp + ")$").test(this.value);
+                                validity.valid = !validity.patternMismatch;
+                            }
+                        }
+                    } else {
+                        validity.valueMissing = this.hasAttribute("required");
+                        validity.valid = !validity.valueMissing;
+                    }
+                }
+                
+                if (this.validity) {
+                    validity.customError = this.validity.customError;
+                    validity.validationMessage = this.validity.validationMessage;
+                    validity.valid = validity.valid && !validity.customError;
+                }
+                
+                this.validity = validity;
+
+                return validity.valid || !!fireEvent("invalid", this);
+            };
+        });
         
         HTMLFormElement.prototype.checkValidity = function() {
             return !any(this, hasInvalidElement);
@@ -307,9 +297,7 @@ window.addEventListener && (function(document, window) {
     });
     
     bindEvent("change", function(e) {
-        var target = e.target;
-
-        if (target.checkValidity()) {
+        if (e.target.checkValidity()) {
             validityAPI.hide();
         }
     });
@@ -346,6 +334,7 @@ window.addEventListener && (function(document, window) {
     bindCapturingEvent("click", function(e) {
         // hide tooltip when user goes to other part of page
         var form = validityAPI.getForm();
+
         if (form) {
             for (var parent = e.target; parent; parent = parent.parentNode) {
                 if (parent === form) {
@@ -353,6 +342,7 @@ window.addEventListener && (function(document, window) {
                 }
             }
         }
+
         validityAPI.hide();
     });
 

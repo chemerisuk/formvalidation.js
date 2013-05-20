@@ -7,7 +7,7 @@ module.exports = function(grunt) {
         watch: {
             karma: {
                 files: ["formvalidation.js", "Gruntfile.js"],
-                tasks: ["jshint:all"] 
+                tasks: ["jshint"] 
             }
         },
 
@@ -23,8 +23,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-contrib-watch");
 
     grunt.registerTask("travis", [
-        "jshint",
-        "karma:travis"
+        "jshint"
     ]);
 
 };
