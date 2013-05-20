@@ -157,11 +157,16 @@ window.addEventListener && (function(document, window) {
                 errorMessage = this._target.validationMessage;
             }
 
-            errorMessage || Object.keys(validity).some(function(errorType) {
-                if (validity[errorType]) {
-                    return !!(i18nSuffix = this.getErrorClass(errorType));
+            if (!errorMessage) {
+                for (var errorType in validity) {
+                    if (validity[errorType]) {
+                        i18nSuffix = this.getErrorClass(errorType);
+                        if (i18nSuffix) {
+                            break;
+                        }  
+                    }
                 }
-            }, this);
+            }
 
             this._el.textContent = errorMessage || "";
             this._el.setAttribute("data-i18n", i18nSuffix ? "validity." + i18nSuffix : "");
