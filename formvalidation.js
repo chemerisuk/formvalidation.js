@@ -345,9 +345,15 @@ window.addEventListener && (function(document, window) {
     
     bindCapturingEvent("click", function(e) {
         // hide tooltip when user goes to other part of page
-        if (e.target.form !== validityAPI.getForm()) {
-            validityAPI.hide();
+        var form = validityAPI.getForm();
+        if (form) {
+            for (var parent = e.target; parent; parent = parent.parentNode) {
+                if (parent == form) {
+                    return
+                }
+            }
         }
+        validityAPI.hide();
     });
 
     // calendar api
