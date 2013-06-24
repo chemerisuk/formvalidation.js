@@ -1,6 +1,8 @@
 formvalidation.js[![Build Status](https://api.travis-ci.org/chemerisuk/formvalidation.js.png?branch=master)](http://travis-ci.org/chemerisuk/formvalidation.js)
 =================
-HTML5 forms polyfill
+HTML5 forms polyfill. 
+
+NO LONGER SUPPORTED. Take a look at https://github.com/chemerisuk/better-form-validation for a better approach.
 
 Features
 --------
